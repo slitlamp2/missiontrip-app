@@ -1,0 +1,167 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import contentsData from '../data/contents.json';
+import type { Contents } from '../types';
+
+const contents = contentsData as Contents;
+
+type TabKey = 'devotion' | 'praise';
+
+export default function WordScreen() {
+  const [activeTab, setActiveTab] = useState<TabKey>('devotion');
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'devotion' && styles.tabActive]}
+          onPress={() => setActiveTab('devotion')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.tabText, activeTab === 'devotion' && styles.tabTextActive]}>
+            말씀
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'praise' && styles.tabActive]}
+          onPress={() => setActiveTab('praise')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.tabText, activeTab === 'praise' && styles.tabTextActive]}>
+            찬양
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {activeTab === 'devotion'
+          ? contents.devotions.map((devotion) => (
+              <View key={devotion.id} style={styles.card}>
+                <View style={styles.dayBadge}>
+                  <Text style={styles.dayBadgeText}>{devotion.day}일차 QT</Text>
+                </View>
+                <Text style={styles.cardTitle}>{devotion.title}</Text>
+                <Text style={styles.verse}>{devotion.verse}</Text>
+                <Text style={styles.bodyText}>{devotion.text}</Text>
+              </View>
+            ))
+          : contents.praises.map((praise) => (
+              <View key={praise.id} style={styles.card}>
+                <Text style={styles.cardTitle}>{praise.title}</Text>
+                <Text style={styles.artist}>{praise.artist}</Text>
+                <View style={styles.lyricsBox}>
+                  <Text style={styles.lyrics}>{praise.lyrics}</Text>
+                </View>
+                {praise.sheetImageUri ? (
+                  <Text style={styles.sheetNote}>악보 이미지 포함</Text>
+                ) : null}
+              </View>
+            ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    margin: 16,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 10,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  tabActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  tabTextActive: {
+    color: '#2563EB',
+  },
+  content: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  dayBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginBottom: 10,
+  },
+  dayBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 6,
+  },
+  verse: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2563EB',
+    marginBottom: 12,
+  },
+  artist: {
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 12,
+  },
+  bodyText: {
+    fontSize: 14,
+    color: '#334155',
+    lineHeight: 24,
+  },
+  lyricsBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 14,
+  },
+  lyrics: {
+    fontSize: 14,
+    color: '#334155',
+    lineHeight: 24,
+  },
+  sheetNote: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginTop: 10,
+  },
+});

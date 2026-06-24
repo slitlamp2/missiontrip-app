@@ -1,0 +1,218 @@
+[
+  {
+    "day": 0,
+    "date": "2026-07-31",
+    "label": "D-1 국내 이동 (7/31 금)",
+    "meals": [
+      {
+        "type": "dinner",
+        "time": "17:00",
+        "title": "출발 전 식사",
+        "menu": "개인 준비 (간단히 드시고 집결)",
+        "place": "예은교회",
+        "note": "17:00 예은교회 집결 · 6시(18:00) 전 출발 예정"
+      }
+    ]
+  },
+  {
+    "day": 1,
+    "date": "2026-08-01",
+    "label": "1일차 (출국/도착) 8/1(토)",
+    "meals": [
+      {
+        "type": "lunch",
+        "time": "12:00",
+        "title": "기상 및 점심 식사",
+        "menu": "현지 식사",
+        "place": "숙소 또는 현지",
+        "note": "OM308 새벽 도착 후 휴식 · 늦은 기상"
+      },
+      {
+        "type": "dinner",
+        "time": "17:00",
+        "title": "저녁 식사",
+        "menu": "저녁 식사",
+        "place": "숙소 또는 현지",
+        "note": "캠프 준비 전"
+      }
+    ]
+  },
+  {
+    "day": 2,
+    "date": "2026-08-02",
+    "label": "2일차 (주일) 8/2(일) · 캠프 1일차",
+    "meals": [
+      {
+        "type": "breakfast",
+        "time": "07:00",
+        "title": "아침 식사",
+        "menu": "아침 식사",
+        "place": "숙소",
+        "note": "06:30 아침 예배 후"
+      },
+      {
+        "type": "lunch",
+        "time": "12:00",
+        "title": "점심 식사",
+        "menu": "점심 식사",
+        "place": "캠프 현장",
+        "note": "주일 예배 · 캠프 1일차"
+      },
+      {
+        "type": "dinner",
+        "time": "17:00",
+        "title": "저녁 식사",
+        "menu": "저녁 식사",
+        "place": "캠프 현장",
+        "note": "기도회 전"
+      }
+    ]
+  },
+  {
+    "day": 3,
+    "date": "2026-08-03",
+    "label": "3일차 8/3(월) · 캠프 2일차",
+    "meals": [
+      {
+        "type": "breakfast",
+        "time": "07:30",
+        "title": "아침 식사",
+        "menu": "아침 식사",
+        "place": "숙소",
+        "note": ""
+      },
+      {
+        "type": "lunch",
+        "time": "12:00",
+        "title": "점심 식사",
+        "menu": "점심 식사",
+        "place": "캠프 현장",
+        "note": "미니 체육대회 전후"
+      },
+      {
+        "type": "dinner",
+        "time": "17:00",
+        "title": "저녁 식사",
+        "menu": "저녁 식사",
+        "place": "캠프 현장",
+        "note": "캠프 저녁 집회 전"
+      }
+    ]
+  },
+  {
+    "day": 4,
+    "date": "2026-08-04",
+    "label": "4일차 8/4(화) · 캠프 3일차",
+    "meals": [
+      {
+        "type": "breakfast",
+        "time": "07:30",
+        "title": "아침 식사",
+        "menu": "아침 식사",
+        "place": "숙소",
+        "note": ""
+      },
+      {
+        "type": "lunch",
+        "time": "12:00",
+        "title": "점심 식사",
+        "menu": "점심 식사",
+        "place": "캠프 현장",
+        "note": "Our Rise Up Story 전후"
+      },
+      {
+        "type": "dinner",
+        "time": "17:00",
+        "title": "저녁 식사",
+        "menu": "저녁 식사",
+        "place": "캠프 현장",
+        "note": "전체 기도회 전"
+      }
+    ]
+  },
+  {
+    "day": 5,
+    "date": "2026-08-05",
+    "label": "5일차 8/5(수)",
+    "meals": [
+      {
+        "type": "breakfast",
+        "time": "07:30",
+        "title": "아침 식사",
+        "menu": "아침 식사",
+        "place": "숙소",
+        "note": ""
+      },
+      {
+        "type": "lunch",
+        "time": "12:00",
+        "title": "점심 식사",
+        "menu": "점심 식사",
+        "place": "숙소 또는 현지",
+        "note": ""
+      },
+      {
+        "type": "dinner",
+        "time": "17:00",
+        "title": "저녁 식사",
+        "menu": "저녁 식사",
+        "place": "숙소 또는 현지",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "day": 6,
+    "date": "2026-08-06",
+    "label": "6일차 8/6(목)",
+    "meals": [
+      {
+        "type": "breakfast",
+        "time": "07:30",
+        "title": "아침 식사",
+        "menu": "아침 식사",
+        "place": "숙소",
+        "note": ""
+      },
+      {
+        "type": "lunch",
+        "time": "12:00",
+        "title": "점심 식사",
+        "menu": "점심 식사",
+        "place": "숙소 또는 현지",
+        "note": ""
+      },
+      {
+        "type": "dinner",
+        "time": "17:00",
+        "title": "저녁 식사",
+        "menu": "저녁 식사",
+        "place": "숙소 또는 현지",
+        "note": "귀국 전 마지막 저녁"
+      }
+    ]
+  },
+  {
+    "day": 7,
+    "date": "2026-08-07",
+    "label": "7일차 (귀국) 8/7(금)",
+    "meals": [
+      {
+        "type": "breakfast",
+        "time": "07:30",
+        "title": "아침 식사",
+        "menu": "아침 식사",
+        "place": "숙소",
+        "note": "짐 정리 전"
+      },
+      {
+        "type": "lunch",
+        "time": "12:00",
+        "title": "점심 식사",
+        "menu": "점심 식사",
+        "place": "이동 중 또는 공항",
+        "note": "공항 이동 전"
+      }
+    ]
+  }
+]

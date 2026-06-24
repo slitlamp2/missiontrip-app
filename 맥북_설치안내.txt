@@ -1,0 +1,29 @@
+2026 Rise Up 몽골선교 앱 — 맥북 설치 안내
+========================================
+
+1. Google Drive에서 zip 파일을 맥북으로 다운로드
+2. 압축 해제 (mongolia-mission-app 폴더)
+3. 터미널에서 프로젝트 폴더로 이동:
+   cd ~/Downloads/mongolia-mission-app   (경로는 실제 위치에 맞게)
+
+4. Node.js 설치 (없다면 https://nodejs.org LTS 버전)
+
+5. 패키지 설치:
+   npm install
+
+6. 앱 실행:
+   npm start
+   또는
+   npx expo start
+
+7. iOS 시뮬레이터: 터미널에서 i 키 입력
+   Android 에뮬레이터: a 키 입력
+   실제 폰: Expo Go 앱 설치 후 QR 코드 스캔
+
+로그인: users.json에 등록된 이름 선택 · PIN 1234
+
+주의
+----
+- node_modules는 zip에 포함되지 않았습니다. 반드시 npm install 실행
+- 맥에서 처음 실행 시 expo, react-native 관련 추가 설치 안내가 나올 수 있음
+- Xcode가 있어야 iOS 시뮬레이터 사용 가능

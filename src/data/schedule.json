@@ -1,0 +1,122 @@
+[
+  {
+    "day": 0,
+    "date": "2026-07-31",
+    "label": "D-1 국내 이동 (7/31 금)",
+    "items": [
+      { "time": "17:00", "title": "예은교회 집결", "description": "단원 전체 예은교회 앞 집결 및 출발 준비", "important": true },
+      { "time": "18:00", "title": "출발 예정", "description": "6시(18:00) 전 출발 예정", "important": true }
+    ]
+  },
+  {
+    "day": 1,
+    "date": "2026-08-01",
+    "label": "1일차 (출국/도착) 8/1(토)",
+    "items": [
+      { "time": "00:05", "title": "인천 출발 OM308", "description": "MIAT 몽골항공 OM308편 · 8/1(토) 인천 00:05 출발 → 울란바토르 02:45 도착", "important": true },
+      { "time": "02:45", "title": "울란바토르 도착", "description": "칭기스칸 국제공항 도착 (현지시각 02:45) · 입국 심사 및 수하물 수취", "important": true },
+      { "time": "04:00", "title": "숙소 이동", "description": "버스로 울란바토르 시내 숙소 이동" },
+      { "time": "05:00", "title": "체크인 및 휴식", "description": "숙소 체크인 후 휴식 및 수면" },
+      { "time": "12:00", "title": "기상 및 점심 식사", "description": "늦은 기상 후 점심 식사" },
+      { "time": "14:00", "title": "휴식", "description": "시차 적응 및 휴식" },
+      { "time": "17:00", "title": "저녁 식사", "description": "저녁 식사" },
+      { "time": "18:00", "title": "청소년 캠프 준비", "description": "캠프 사역 준비 및 현장 점검" },
+      { "time": "19:00", "title": "팀장 미팅 및 사역 준비", "description": "팀장·조장 미팅, 내일 사역 점검" },
+      { "time": "20:00", "title": "캠프 저녁 집회 (세족식)", "description": "청소년 캠프 저녁 집회 · 세족식 프로그램" },
+      { "time": "21:00", "title": "휴식", "description": "자유 휴식" },
+      { "time": "22:00", "title": "취침", "description": "취침" }
+    ]
+  },
+  {
+    "day": 2,
+    "date": "2026-08-02",
+    "label": "2일차 (주일) 8/2(일) · 캠프 1일차",
+    "items": [
+      { "time": "06:30", "title": "기상 및 아침 예배", "description": "기상 후 아침 예배" },
+      { "time": "07:00", "title": "아침 식사", "description": "아침 식사" },
+      { "time": "08:00", "title": "교회 이동", "description": "생명샘 교회로 이동" },
+      { "time": "09:00", "title": "주일 예배", "description": "생명샘 교회 주일 예배 참석", "important": true },
+      { "time": "12:00", "title": "점심 식사", "description": "점심 식사" },
+      { "time": "13:00", "title": "캠프 1일차 (오전)", "description": "【RISE UP IN GOD'S LOVE】\n· God Knows My Name (15:00-15:30)\n· 소그룹 나눔 (16:00-16:30)\n· God Discovery Stations (16:30-17:20)", "important": true },
+      { "time": "17:00", "title": "저녁 식사", "description": "저녁 식사" },
+      { "time": "18:00", "title": "기도회", "description": "팀·캠프 기도회" },
+      { "time": "22:00", "title": "취침", "description": "취침" },
+      { "time": "23:00", "title": "취침 (조별)", "description": "늦은 취침 조는 23:00까지" }
+    ]
+  },
+  {
+    "day": 3,
+    "date": "2026-08-03",
+    "label": "3일차 8/3(월) · 캠프 2일차",
+    "items": [
+      { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
+      { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
+      { "time": "09:00", "title": "캠프 2일차 (오전)", "description": "【RISE UP WITH JESUS】\n· What Would Jesus Do? (10:50-11:30)\n· 상황극 Before & After 발표", "important": true },
+      { "time": "12:00", "title": "점심 식사", "description": "점심 식사" },
+      { "time": "13:20", "title": "미니 체육대회", "description": "【RISE UP WITH JESUS】\n· 미니 체육대회 (13:20-17:30)\n· 준비운동·팀나누기·1부·2부 게임·계주", "important": true },
+      { "time": "17:00", "title": "저녁 식사", "description": "저녁 식사" },
+      { "time": "18:00", "title": "팀장 미팅 및 사역 준비", "description": "팀장 미팅, 내일 사역 점검" },
+      { "time": "19:00", "title": "기도회", "description": "캠프 기도회" },
+      { "time": "20:00", "title": "캠프 저녁 집회", "description": "청소년 캠프 저녁 집회" },
+      { "time": "22:00", "title": "취침", "description": "취침" }
+    ]
+  },
+  {
+    "day": 4,
+    "date": "2026-08-04",
+    "label": "4일차 8/4(화) · 캠프 3일차",
+    "items": [
+      { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
+      { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
+      { "time": "09:00", "title": "캠프 3일차 (오전)", "description": "【RISE UP IN FAITH】\n· Prayer Journal (10:50-11:30)\n· Thank you / Sorry / Please help me / Pray for my friend", "important": true },
+      { "time": "12:00", "title": "점심 식사", "description": "점심 식사" },
+      { "time": "13:20", "title": "Our Rise Up Story", "description": "【RISE UP IN FAITH】\n· Our Rise Up Story (13:20-14:20)\n· 은혜 나눔 후 모자이크 현수막 완성", "important": true },
+      { "time": "14:00", "title": "ONE DAY WORSHIP · 문화 탐방", "description": "몽골 청소년·청년 ONE DAY WORSHIP 및 문화 탐방" },
+      { "time": "16:40", "title": "My One Sentence to God", "description": "【RISE UP IN FAITH】\n· My One Sentence to God (16:40-17:20)\n· 은혜 한 문장 정리 · 조원 축복 나눔 · 네컷 사진", "important": true },
+      { "time": "17:00", "title": "저녁 식사", "description": "저녁 식사" },
+      { "time": "18:00", "title": "전체 기도회", "description": "캠프 전체 기도회" },
+      { "time": "19:00", "title": "문화 탐방", "description": "울란바토르 문화 탐방" },
+      { "time": "22:00", "title": "숙소 이동", "description": "숙소로 이동" },
+      { "time": "23:00", "title": "취침", "description": "취침" }
+    ]
+  },
+  {
+    "day": 5,
+    "date": "2026-08-05",
+    "label": "5일차 8/5(수)",
+    "items": [
+      { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
+      { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
+      { "time": "12:00", "title": "점심 식사", "description": "점심 식사" },
+      { "time": "17:00", "title": "저녁 식사", "description": "저녁 식사" },
+      { "time": "22:00", "title": "취침", "description": "취침" }
+    ]
+  },
+  {
+    "day": 6,
+    "date": "2026-08-06",
+    "label": "6일차 8/6(목)",
+    "items": [
+      { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
+      { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
+      { "time": "12:00", "title": "점심 식사", "description": "점심 식사" },
+      { "time": "17:00", "title": "저녁 식사", "description": "저녁 식사" },
+      { "time": "22:00", "title": "취침", "description": "취침" }
+    ]
+  },
+  {
+    "day": 7,
+    "date": "2026-08-07",
+    "label": "7일차 (귀국) 8/7(금)",
+    "items": [
+      { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
+      { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
+      { "time": "08:00", "title": "짐 정리", "description": "짐 정리 및 체크아웃 준비" },
+      { "time": "12:00", "title": "점심 식사", "description": "점심 식사" },
+      { "time": "14:00", "title": "공항 이동", "description": "칭기스칸 국제공항 이동 · OM307 탑승 수속" },
+      { "time": "18:15", "title": "울란바토르 출발 OM307", "description": "8/7(금) OM307편 · 울란바토르 18:15 → 인천 22:25", "important": true },
+      { "time": "22:25", "title": "인천 도착", "description": "인천국제공항 도착" },
+      { "time": "23:00", "title": "짐 정리 및 해산", "description": "팀 마무리 기도 후 귀가 해산", "important": true }
+    ]
+  }
+]

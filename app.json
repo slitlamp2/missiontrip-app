@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "2026 Rise Up 몽골선교",
+    "slug": "mongolia-mission-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E6F4FE"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yeun.riseupmongolia"
+    },
+    "android": {
+      "package": "com.yeun.riseupmongolia",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-asset"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1fe98eee-8c99-45df-b93c-7998305f1be7"
+      }
+    },
+    "owner": "slitlamp2"
+  }
+}

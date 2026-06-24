@@ -1,0 +1,255 @@
+{
+  "devotions": [
+    {
+      "id": "d1",
+      "day": 1,
+      "title": "일어나라 빛을 발하라",
+      "verse": "이사야 60:1",
+      "text": "일어나라 빛을 발하라 이는 여호와의 영광이 네 위에 임하였음이니라.\n\n2026 Rise Up 캠프의 주제말씀입니다. 어둠 가운데 있어도 하나님의 영광이 우리 위에 임하셨습니다. 몽골 땅에 도착한 오늘, 주님의 빛으로 일어나 청소년들에게 소망을 전하는 하루가 되기를 기도합시다."
+    },
+    {
+      "id": "d2",
+      "day": 2,
+      "title": "하나님이 나의 이름을 아신다",
+      "verse": "시편 139:1",
+      "text": "여호와여 주께서 나를 살피사 아셨나이다.\n\n캠프 1일차 — RISE UP IN GOD'S LOVE. 오늘 청소년들은 'God Knows My Name'을 통해 하나님이 자신을 아시고 사랑하신다는 사실을 만납니다. 먼저 내가 그 사랑을 깊이 경험하고, 그 사랑을 전하는 사역자가 되기를 기도합시다."
+    },
+    {
+      "id": "d3",
+      "day": 3,
+      "title": "예수님이라면 어떻게 하셨을까",
+      "verse": "요한복음 13:15",
+      "text": "내가 너희에게 행한 것 같이 너희도 행하게 하려고 본을 보였노라.\n\n캠프 2일차 — RISE UP WITH JESUS. 'What Would Jesus Do?' 프로그램과 미니 체육대회가 있습니다. 예수님의 마음으로 청소년들과 함께하며, 공동체 안에서 연합과 기쁨을 나누는 하루가 되기를 기도합시다."
+    },
+    {
+      "id": "d4",
+      "day": 4,
+      "title": "믿음으로 일어나라",
+      "verse": "히브리서 11:1",
+      "text": "믿음은 바라는 것들의 실상이요 보이지 않는 것들의 증거니.\n\n캠프 3일차 — RISE UP IN FAITH. Prayer Journal, Our Rise Up Story, My One Sentence to God으로 마무리됩니다. 말씀을 삶으로 연결하고, 기도와 결단으로 캠프를 마치며, 돌아가서도 믿음으로 살아가도록 도전합시다."
+    },
+    {
+      "id": "d5",
+      "day": 5,
+      "title": "온 마음으로 예배하라",
+      "verse": "시편 95:6",
+      "text": "오 come, 우리가 굽히어 경배하며 우리를 지으신 여호와께 무릎을 꿇으며 우리 목자 되신 여호와 앞에 엎드리자.\n\n몽골 청소년·청년 ONE DAY WORSHIP과 문화 탐방의 날입니다. 다양한 문화 속에서도 하나님을 향한 예배의 자세로 하루를 시작합시다."
+    },
+    {
+      "id": "d6",
+      "day": 6,
+      "title": "은혜를 기억하라",
+      "verse": "시편 103:2",
+      "text": "내 영혼아 여호와를 송축하라 그의 모든 은택을 잊지 말지어다.\n\n캠프를 마치고 귀국을 앞둔 하루입니다. 받은 은혜를 돌아보며 감사하고, 집으로 돌아가서도 Rise Up의 결단을 이어가기를 기도합시다."
+    }
+  ],
+  "praises": [
+    {
+      "id": "p1",
+      "title": "Rise Up",
+      "artist": "캠프 주제찬양",
+      "sheetImageUri": null,
+      "lyrics": "Rise Up\n일어나라 빛을 발하라\n여호와의 영광이\n네 위에 임하였음이니라\n\nRise Up in God's Love\nRise Up with Jesus\nRise Up in Faith\n주님과 함께 일어나리"
+    },
+    {
+      "id": "p2",
+      "title": "God Knows My Name",
+      "artist": "캠프 1일차",
+      "sheetImageUri": null,
+      "lyrics": "God Knows My Name\n하나님은 나의 이름을 아시네\n나를 사랑하시고\n나를 아시는 주\n\n이 캠프는 나를 위한 자리\n주님의 사랑 안에서\n일어나 빛을 발하리"
+    },
+    {
+      "id": "p3",
+      "title": "What Would Jesus Do?",
+      "artist": "캠프 2일차",
+      "sheetImageUri": null,
+      "lyrics": "What Would Jesus Do?\n예수님이라면 어떻게 하셨을까\n\n사랑으로, 용서로\n섬김으로, 기도로\n예수님의 발자취를 따라\n오늘도 Rise Up"
+    },
+    {
+      "id": "p4",
+      "title": "Our Rise Up Story",
+      "artist": "캠프 3일차",
+      "sheetImageUri": null,
+      "lyrics": "Our Rise Up Story\n2026 우리의 이야기\n\n캠프 동안 받은 은혜\n하나님께 드리는 감사\n믿음으로 일어나\n빛으로 살아가리"
+    },
+    {
+      "id": "p5",
+      "title": "일어나라 빛을 발하라",
+      "artist": "주제말씀 찬양",
+      "sheetImageUri": null,
+      "lyrics": "일어나라 빛을 발하라\n이는 여호와의 영광이\n네 위에 임하였음이니라\n(이사야 60:1)\n\n어둠이 물러가고\n주의 빛이 비치니\nRise Up, Rise Up\n주님과 함께"
+    }
+  ],
+  "mongolian": [
+    {
+      "category": "선교팀 필수 회화",
+      "phrases": [
+        {
+          "korean": "안녕하세요?",
+          "mongolian": "Сайн байна уу?",
+          "pronunciation": "새-응 배-노?"
+        },
+        {
+          "korean": "감사합니다",
+          "mongolian": "Баярлалаа",
+          "pronunciation": "바야를라-"
+        },
+        {
+          "korean": "죄송합니다",
+          "mongolian": "Уучлаарай",
+          "pronunciation": "오-츨라래"
+        },
+        {
+          "korean": "네 / 아니요",
+          "mongolian": "Тийм / Үгүй",
+          "pronunciation": "팀 / 우-귀"
+        },
+        {
+          "korean": "만나서 반갑습니다",
+          "mongolian": "Уулзсандаа баяртай байна",
+          "pronunciation": "올-짠다 바야르태 밴"
+        },
+        {
+          "korean": "제 이름은 [ㅇㅇㅇ]입니다",
+          "mongolian": "Миний нэрийг [ㅇㅇㅇ] гэдэг",
+          "pronunciation": "미니 네릭 [ㅇㅇㅇ] 게득"
+        },
+        {
+          "korean": "예수님은 당신을 사랑하십니다",
+          "mongolian": "Есүс танд хайртай",
+          "pronunciation": "예수스 탄드 해르태"
+        },
+        {
+          "korean": "하나님이 당신을 축복하시길!",
+          "mongolian": "Бурхан таныг ивээг",
+          "pronunciation": "보르항 타닉 이베-그"
+        },
+        {
+          "korean": "안녕히 계세요 (작별)",
+          "mongolian": "Баяртай",
+          "pronunciation": "바야르태"
+        },
+        {
+          "korean": "화장실이 어디인가요?",
+          "mongolian": "Бие засах газар хаана байна вэ?",
+          "pronunciation": "비- 자스흐 가즈르 항- 밴 웨?"
+        }
+      ]
+    },
+    {
+      "category": "어린이 · 인사 및 교제",
+      "phrases": [
+        {
+          "korean": "안녕! (가벼운 인사)",
+          "mongolian": "Сайн уу?",
+          "pronunciation": "새-노?"
+        },
+        {
+          "korean": "이름이 뭐니?",
+          "mongolian": "Чиний нэр хэн бэ?",
+          "pronunciation": "치니 네르 헹 베?"
+        },
+        {
+          "korean": "몇 살이니?",
+          "mongolian": "Чи хэдэн настай вэ?",
+          "pronunciation": "치 헤든 나스태 웨?"
+        },
+        {
+          "korean": "정말 예쁘다 / 멋지다!",
+          "mongolian": "Маш хөөрхөн байна",
+          "pronunciation": "마쉬 흐-르흥 밴"
+        },
+        {
+          "korean": "나랑 같이 놀자",
+          "mongolian": "Надтай хамт тоглоё",
+          "pronunciation": "나드태 함트 토글로요"
+        }
+      ]
+    },
+    {
+      "category": "어린이 · 활동 및 통제",
+      "phrases": [
+        {
+          "korean": "이리 와봐 (모이세요)",
+          "mongolian": "Наашаа ирээрэй",
+          "pronunciation": "나-샤 이레-레"
+        },
+        {
+          "korean": "자리에 앉아주세요",
+          "mongolian": "Суугаарай",
+          "pronunciation": "소-가래"
+        },
+        {
+          "korean": "조용히 해주세요 (쉿)",
+          "mongolian": "Чимээгүй байгаарай",
+          "pronunciation": "치메-귀 배가래"
+        },
+        {
+          "korean": "나를 따라 해봐",
+          "mongolian": "Намайг дагаарай",
+          "pronunciation": "나매그 다가래"
+        },
+        {
+          "korean": "다 같이 해보자",
+          "mongolian": "Бүгдээрээ хамт хийе",
+          "pronunciation": "북데-레 함트 히-예"
+        },
+        {
+          "korean": "참 잘했어요! (최고야)",
+          "mongolian": "Маш сайн байна!",
+          "pronunciation": "마쉬 생 밴!"
+        },
+        {
+          "korean": "그림 그리자",
+          "mongolian": "Зураг зуръя",
+          "pronunciation": "조락 조르야"
+        },
+        {
+          "korean": "노래 부르자 (찬양하자)",
+          "mongolian": "Дуу дуулъя",
+          "pronunciation": "도- 돌야"
+        },
+        {
+          "korean": "손잡자",
+          "mongolian": "Хөтлөлцье",
+          "pronunciation": "흐틀를츠예"
+        }
+      ]
+    },
+    {
+      "category": "어린이 · 복음 전파 및 축복",
+      "phrases": [
+        {
+          "korean": "예수님은 너를 사랑해",
+          "mongolian": "Есүс чамд хайртай",
+          "pronunciation": "예수스 참드 해르태"
+        },
+        {
+          "korean": "하나님은 너와 함께 하셔",
+          "mongolian": "Бурхан чамтай хамт байгаа",
+          "pronunciation": "보르항 참태 함트 배가"
+        },
+        {
+          "korean": "선물이야 (선물 줄 때)",
+          "mongolian": "Энэ бол бэлэг",
+          "pronunciation": "에네 볼 벨렉"
+        },
+        {
+          "korean": "같이 기도할까?",
+          "mongolian": "Хамт залбирах уу?",
+          "pronunciation": "함트 잘비라흐 오?"
+        },
+        {
+          "korean": "아멘!",
+          "mongolian": "Амен!",
+          "pronunciation": "아멘!"
+        },
+        {
+          "korean": "잘 가! (다음에 또 보자)",
+          "mongolian": "Баяртай! Дараа уулзъя",
+          "pronunciation": "바야르태! 다라- 올즈야"
+        }
+      ]
+    }
+  ]
+}

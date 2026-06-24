@@ -1,0 +1,129 @@
+# Mongolia Mission App - Cursor AI Rules
+
+## 프로젝트 개요
+몽골 단기봉사팀 30명을 위한 React Native (Expo) 모바일 앱.
+몽골 현지의 불안정한 인터넷 환경을 고려하여 **완전한 Offline-First 아키텍처**로 구성된다.
+
+---
+
+## 핵심 아키텍처 원칙 (절대 위반 금지)
+
+### 1. Offline-First 데이터 원칙
+- 일정(schedule), 말씀/찬양(devotions/praises), 몽골어/예절(mongolian) 등 **핵심 콘텐츠는 절대로 외부 API를 호출하지 않는다.**
+- 모든 정적 콘텐츠는 `src/data/` 폴더 내 JSON 파일에서 직접 `import`하여 사용한다.
+- `fetch()`, `axios`, `useQuery` 등으로 외부 서버에서 이 데이터를 불러오는 코드를 작성하지 않는다.
+
+### 2. 오프라인 로그인 시스템
+- 서버 인증(JWT, OAuth 등)을 사용하지 않는다.
+- 로그인 절차: `src/data/users.json` 목록에서 이름 선택 → 4자리 PIN 입력 → `verifyPin()` 로컬 비교 → 성공 시 `saveSession()`으로 `AsyncStorage`에 저장.
+- 관련 헬퍼: `src/utils/auth.ts` (getSession, saveSession, clearSession, verifyPin)
+- 앱 시작 시 `getSession()`으로 자동 로그인 여부를 확인한다.
+
+### 3. 공유 앨범 업로드 대기열 (Queue)
+- 오프라인 상태에서 사진 업로드 시도 시 → `enqueue()`로 `AsyncStorage`에 저장.
+- 온라인 복귀 시 → `getQueue()` 순차 처리 후 `dequeue()`로 항목 제거.
+- 관련 헬퍼: `src/utils/uploadQueue.ts` (getQueue, enqueue, dequeue, clearQueue, getQueueCount)
+- 네트워크 상태 감지: `@react-native-community/netinfo`의 `useNetInfo()` 훅 사용.
+- 백엔드: **Firebase Storage** (Phase 4에서만 연동, 공유 앨범 업로드 전용).
+
+---
+
+## 기술 스택
+
+| 항목 | 기술 |
+|------|------|
+| 프레임워크 | React Native (Expo SDK 56) |
+| 언어 | TypeScript (strict mode) |
+| 네비게이션 | React Navigation v7 (Bottom Tabs) |
+| 로컬 저장소 | @react-native-async-storage/async-storage |
+| 네트워크 감지 | @react-native-community/netinfo |
+| 미디어 | expo-image-picker |
+| 백엔드 | Firebase (공유 앨범 동기화 전용, Phase 4) |
+
+---
+
+## 폴더 구조 및 역할
+
+```
+src/
+  data/
+    users.json       - 30명 팀원 정보 (id, name, pin). 절대 외부 API로 대체하지 말 것.
+    schedule.json    - 5일치 일정 타임라인. 정적 데이터.
+    contents.json    - 말씀(devotions), 찬양(praises), 몽골어(mongolian) 통합 파일.
+  screens/
+    LoginScreen.tsx       - 이름 선택 + PIN 입력 로그인
+    ScheduleScreen.tsx    - 탭 1: 일정
+    WordScreen.tsx        - 탭 2: 말씀/찬양
+    MongolianScreen.tsx   - 탭 3: 몽골어/예절
+    AlbumScreen.tsx       - 탭 4: 공유 앨범
+  components/        - 공통 UI 컴포넌트 (재사용 가능한 것만)
+  utils/
+    auth.ts          - AsyncStorage 로그인 헬퍼
+    uploadQueue.ts   - 업로드 대기열 헬퍼
+assets/
+  images/            - 찬양 악보 이미지 등 로컬 자산 (오디오 파일 없음)
+```
+
+---
+
+## 네비게이션 구조
+
+```
+RootNavigator
+├── LoginScreen     (로그인 전)
+└── MainTabNavigator (로그인 후)
+    ├── Tab 1: ScheduleScreen   (일정)
+    ├── Tab 2: WordScreen       (말씀/찬양)
+    ├── Tab 3: MongolianScreen  (몽골어/예절)
+    └── Tab 4: AlbumScreen      (공유 앨범)
+```
+
+---
+
+## 코드 작성 규칙
+
+### TypeScript
+- 모든 JSON 데이터에 대한 타입 인터페이스를 정의한다.
+- `any` 타입 사용을 금지한다.
+- JSON import 시 타입 단언(as Type[])을 반드시 사용한다.
+
+```typescript
+// 올바른 예시
+import scheduleData from '../data/schedule.json';
+import type { ScheduleDay } from '../types';
+const schedule = scheduleData as ScheduleDay[];
+```
+
+### 이미지 & 미디어
+- 오디오 파일은 사용하지 않는다.
+- 이미지는 `assets/images/` 폴더의 로컬 파일만 사용한다.
+- `require('../../../assets/images/praise-sheet.jpg')` 형태로 정적 require 사용.
+- 원격 URL 이미지 사용 금지 (오프라인 환경 고려).
+
+### 스타일링
+- `StyleSheet.create()`를 사용한다.
+- 인라인 스타일은 간단한 경우에만 허용한다.
+- 다국어 텍스트(한국어, 몽골어) 렌더링 시 폰트 지원을 고려한다.
+
+### 에러 처리
+- `AsyncStorage` 접근은 반드시 try-catch로 감싼다.
+- 네트워크 작업(Firebase 업로드)은 반드시 에러 핸들링을 포함한다.
+
+---
+
+## Phase 진행 현황
+
+- [x] **Phase 1**: 프로젝트 초기화, 폴더 구조, 더미 JSON 데이터, .cursorrules
+- [x] **Phase 2**: 로그인 화면 구현 (이름 드롭다운, PIN 입력, AsyncStorage 연동)
+- [x] **Phase 3**: 탭 1~3 정적 UI 화면 구현 (schedule.json, contents.json 활용)
+- [x] **Phase 4**: 공유 앨범 UI, netinfo, expo-image-picker, 업로드 대기열 로직
+
+---
+
+## 절대 하지 말아야 할 것
+
+1. 핵심 콘텐츠 데이터를 외부 API로 가져오는 코드 작성
+2. `users.json` 외의 인증 서버 호출
+3. 오디오 파일 추가 (텍스트와 이미지만 사용)
+4. Firebase를 공유 앨범 외의 목적으로 사용
+5. 인터넷 연결 없이 앱이 작동 불가능한 구조 설계
