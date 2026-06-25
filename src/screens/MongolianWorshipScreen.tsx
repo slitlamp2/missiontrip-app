@@ -5,14 +5,13 @@ import { Asset } from 'expo-asset';
 import { WebView } from 'react-native-webview';
 import StackScreenHeader from '../components/StackScreenHeader';
 
-const worshipPdf = require('../../assets/documents/mongol-worship-conti.pdf');
-
 export default function MongolianWorshipScreen() {
   const navigation = useNavigation();
   const [pdfUri, setPdfUri] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
+      const worshipPdf = require('../../assets/documents/mongol-worship-conti.pdf');
       const asset = Asset.fromModule(worshipPdf);
       await asset.downloadAsync();
       setPdfUri(asset.localUri ?? asset.uri);
