@@ -33,6 +33,7 @@
     },
     "plugins": [
       "expo-asset",
+      "expo-file-system",
       [
         "expo-image-picker",
         {
