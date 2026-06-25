@@ -1,16 +1,11 @@
-import React, { Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
+import React, { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import * as SplashScreen from 'expo-splash-screen';
 import LoginScreen from './src/screens/LoginScreen';
+import RootNavigator from './src/navigation/RootNavigator';
 import { getSession } from './src/utils/auth';
-
-// RootNavigator는 로그인 후에만 로드 (무거운 네이티브 모듈 지연)
-const RootNavigator = React.lazy(() => import('./src/navigation/RootNavigator'));
-
-SplashScreen.preventAutoHideAsync().catch(() => {});
 
 class AppErrorBoundary extends React.Component<
   { children: ReactNode },
@@ -35,14 +30,6 @@ class AppErrorBoundary extends React.Component<
   }
 }
 
-function LoadingView() {
-  return (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#2563EB" />
-    </View>
-  );
-}
-
 export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -55,7 +42,6 @@ export default function App() {
       setIsLoggedIn(false);
     } finally {
       setIsReady(true);
-      SplashScreen.hideAsync().catch(() => {});
     }
   }, []);
 
@@ -67,7 +53,12 @@ export default function App() {
   const handleLogout = () => setIsLoggedIn(false);
 
   if (!isReady) {
-    return <LoadingView />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563EB" />
+        <StatusBar style="auto" />
+      </View>
+    );
   }
 
   return (
@@ -75,9 +66,7 @@ export default function App() {
       <AppErrorBoundary>
         <NavigationContainer>
           {isLoggedIn ? (
-            <Suspense fallback={<LoadingView />}>
-              <RootNavigator onLogout={handleLogout} />
-            </Suspense>
+            <RootNavigator onLogout={handleLogout} />
           ) : (
             <LoginScreen onLoginSuccess={handleLoginSuccess} />
           )}
