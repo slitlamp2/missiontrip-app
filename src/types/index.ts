@@ -67,6 +67,7 @@ export interface SectionContent {
 export interface Devotion {
   id: string;
   day: number;
+  date: string;
   title: string;
   verse: string;
   text: string;

@@ -1,12 +1,14 @@
-import React, { useCallback, useEffect, useState, type ReactNode } from 'react';
+import React, { Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import LoginScreen from './src/screens/LoginScreen';
-import RootNavigator from './src/navigation/RootNavigator';
 import { getSession } from './src/utils/auth';
+
+// RootNavigator는 로그인 후에만 로드 (무거운 네이티브 모듈 지연)
+const RootNavigator = React.lazy(() => import('./src/navigation/RootNavigator'));
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -33,17 +35,27 @@ class AppErrorBoundary extends React.Component<
   }
 }
 
+function LoadingView() {
+  return (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#2563EB" />
+    </View>
+  );
+}
+
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const checkSession = useCallback(async () => {
     try {
       const session = await getSession();
       setIsLoggedIn(!!session);
+    } catch {
+      setIsLoggedIn(false);
     } finally {
-      setIsLoading(false);
-      await SplashScreen.hideAsync().catch(() => {});
+      setIsReady(true);
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, []);
 
@@ -51,24 +63,21 @@ export default function App() {
     checkSession();
   }, [checkSession]);
 
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
-  };
+  const handleLoginSuccess = () => setIsLoggedIn(true);
+  const handleLogout = () => setIsLoggedIn(false);
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-  };
+  if (!isReady) {
+    return <LoadingView />;
+  }
 
   return (
     <SafeAreaProvider>
       <AppErrorBoundary>
         <NavigationContainer>
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#2563EB" />
-            </View>
-          ) : isLoggedIn ? (
-            <RootNavigator onLogout={handleLogout} />
+          {isLoggedIn ? (
+            <Suspense fallback={<LoadingView />}>
+              <RootNavigator onLogout={handleLogout} />
+            </Suspense>
           ) : (
             <LoginScreen onLoginSuccess={handleLoginSuccess} />
           )}

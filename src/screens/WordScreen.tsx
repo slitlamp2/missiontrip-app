@@ -11,6 +11,15 @@ import type { Contents } from '../types';
 
 const contents = contentsData as Contents;
 
+const DATE_LABELS: Record<string, string> = {
+  '2026-08-02': '8/2(일)',
+  '2026-08-03': '8/3(월)',
+  '2026-08-04': '8/4(화)',
+  '2026-08-05': '8/5(수)',
+  '2026-08-06': '8/6(목)',
+  '2026-08-07': '8/7(금)',
+};
+
 type TabKey = 'devotion' | 'praise';
 
 export default function WordScreen() {
@@ -41,10 +50,14 @@ export default function WordScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === 'devotion'
-          ? contents.devotions.map((devotion) => (
+          ? [...contents.devotions]
+              .sort((a, b) => a.date.localeCompare(b.date))
+              .map((devotion) => (
               <View key={devotion.id} style={styles.card}>
                 <View style={styles.dayBadge}>
-                  <Text style={styles.dayBadgeText}>{devotion.day}일차 QT</Text>
+                  <Text style={styles.dayBadgeText}>
+                    {DATE_LABELS[devotion.date] ?? devotion.date} · 아침 QT
+                  </Text>
                 </View>
                 <Text style={styles.cardTitle}>{devotion.title}</Text>
                 <Text style={styles.verse}>{devotion.verse}</Text>

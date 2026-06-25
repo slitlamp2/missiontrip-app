@@ -32,6 +32,7 @@
     "date": "2026-08-02",
     "label": "2일차 (주일) 8/2(일) · 캠프 1일차",
     "items": [
+      { "time": "06:30", "title": "아침 QT", "description": "시편 121:1-8 · 나의 도움이 어디서 올까\n(말씀 탭에서 전문 보기)", "important": true },
       { "time": "06:30", "title": "기상 및 아침 예배", "description": "기상 후 아침 예배" },
       { "time": "07:00", "title": "아침 식사", "description": "아침 식사" },
       { "time": "08:00", "title": "교회 이동", "description": "생명샘 교회로 이동" },
@@ -49,6 +50,7 @@
     "date": "2026-08-03",
     "label": "3일차 8/3(월) · 캠프 2일차",
     "items": [
+      { "time": "07:00", "title": "아침 QT", "description": "출애굽기 13:17-22 · 하나님이 앞서 가시며 인도하신다\n(말씀 탭에서 전문 보기)", "important": true },
       { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
       { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
       { "time": "09:00", "title": "캠프 2일차 (오전)", "description": "【RISE UP WITH JESUS】\n· What Would Jesus Do? (10:50-11:30)\n· 상황극 Before & After 발표", "important": true },
@@ -66,6 +68,7 @@
     "date": "2026-08-04",
     "label": "4일차 8/4(화) · 캠프 3일차",
     "items": [
+      { "time": "07:00", "title": "아침 QT", "description": "마가복음 4:35-41 · 풍랑 속에서도 예수님과 함께\n(말씀 탭에서 전문 보기)", "important": true },
       { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
       { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
       { "time": "09:00", "title": "캠프 3일차 (오전)", "description": "【RISE UP IN FAITH】\n· Prayer Journal (10:50-11:30)\n· Thank you / Sorry / Please help me / Pray for my friend", "important": true },
@@ -85,6 +88,7 @@
     "date": "2026-08-05",
     "label": "5일차 8/5(수)",
     "items": [
+      { "time": "07:00", "title": "아침 QT", "description": "누가복음 10:38-42 · 주님 앞에 머무는 마음\n(말씀 탭에서 전문 보기)", "important": true },
       { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
       { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
       { "time": "12:00", "title": "점심 식사", "description": "점심 식사" },
@@ -97,6 +101,7 @@
     "date": "2026-08-06",
     "label": "6일차 8/6(목)",
     "items": [
+      { "time": "07:00", "title": "아침 QT", "description": "시편 103:1-5 · 은혜를 잊지 말지어다\n(말씀 탭에서 전문 보기)", "important": true },
       { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
       { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
       { "time": "12:00", "title": "점심 식사", "description": "점심 식사" },
@@ -109,6 +114,7 @@
     "date": "2026-08-07",
     "label": "7일차 (귀국) 8/7(금)",
     "items": [
+      { "time": "07:00", "title": "아침 QT", "description": "로마서 12:1-2 · 삶으로 이어지는 예배\n(말씀 탭에서 전문 보기)", "important": true },
       { "time": "07:00", "title": "기상", "description": "기상 및 개인 준비" },
       { "time": "07:30", "title": "아침 식사", "description": "아침 식사" },
       { "time": "08:00", "title": "짐 정리", "description": "짐 정리 및 체크아웃 준비" },
