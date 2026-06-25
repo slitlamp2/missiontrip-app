@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, View, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
 import { WebView } from 'react-native-webview';
 import StackScreenHeader from '../components/StackScreenHeader';
 
@@ -23,6 +22,26 @@ function buildPdfHtml(base64: string): string {
 </html>`;
 }
 
+async function loadPdfContent(): Promise<
+  { mode: 'uri'; uri: string } | { mode: 'html'; html: string }
+> {
+  const worshipPdf = require('../../assets/documents/mongol-worship-conti.pdf');
+  const asset = Asset.fromModule(worshipPdf);
+  await asset.downloadAsync();
+  const localUri = asset.localUri ?? asset.uri;
+
+  if (Platform.OS === 'ios') {
+    return { mode: 'uri', uri: localUri };
+  }
+
+  // Android 전용: expo-file-system은 iOS 네이티브 링크 제외
+  const FileSystem = require('expo-file-system') as typeof import('expo-file-system');
+  const base64 = await FileSystem.readAsStringAsync(localUri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+  return { mode: 'html', html: buildPdfHtml(base64) };
+}
+
 export default function MongolianWorshipScreen() {
   const navigation = useNavigation();
   const [content, setContent] = useState<
@@ -35,20 +54,7 @@ export default function MongolianWorshipScreen() {
   useEffect(() => {
     void (async () => {
       try {
-        const worshipPdf = require('../../assets/documents/mongol-worship-conti.pdf');
-        const asset = Asset.fromModule(worshipPdf);
-        await asset.downloadAsync();
-        const localUri = asset.localUri ?? asset.uri;
-
-        if (Platform.OS === 'ios') {
-          setContent({ mode: 'uri', uri: localUri });
-        } else {
-          // Android: file:// 직접 접근 차단됨 → base64로 변환
-          const base64 = await FileSystem.readAsStringAsync(localUri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          setContent({ mode: 'html', html: buildPdfHtml(base64) });
-        }
+        setContent(await loadPdfContent());
       } catch (e) {
         const msg = e instanceof Error ? e.message : '파일을 불러올 수 없습니다.';
         setContent({ mode: 'error', message: msg });
