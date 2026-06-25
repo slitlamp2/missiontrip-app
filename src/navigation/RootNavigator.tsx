@@ -1,13 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import HomeScreen from '../screens/HomeScreen';
-import MissionIntroScreen from '../screens/MissionIntroScreen';
-import TeamOrgScreen from '../screens/TeamOrgScreen';
-import PrepMeetingScreen from '../screens/PrepMeetingScreen';
-import MongolianWorshipScreen from '../screens/MongolianWorshipScreen';
-import AnnouncementsScreen from '../screens/AnnouncementsScreen';
-import MainTabNavigator, { type MainTabParamList } from './MainTabNavigator';
+import type { MainTabParamList } from './MainTabNavigator';
 import { NotificationProvider } from '../context/NotificationContext';
 
 export type RootStackParamList = {
@@ -26,6 +22,20 @@ interface RootNavigatorProps {
   onLogout: () => void;
 }
 
+function MainTabsScreen({
+  navigation,
+  onLogout,
+}: NativeStackScreenProps<RootStackParamList, 'MainTabs'> & { onLogout: () => void }) {
+  const MainTabNavigator = require('./MainTabNavigator').default as typeof import('./MainTabNavigator').default;
+
+  return (
+    <MainTabNavigator
+      onLogout={onLogout}
+      onGoHome={() => navigation.navigate('Home')}
+    />
+  );
+}
+
 export default function RootNavigator({ onLogout }: RootNavigatorProps) {
   return (
     <NotificationProvider>
@@ -34,18 +44,28 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
           {() => <HomeScreen onLogout={onLogout} />}
         </Stack.Screen>
         <Stack.Screen name="MainTabs">
-          {({ navigation }) => (
-            <MainTabNavigator
-              onLogout={onLogout}
-              onGoHome={() => navigation.navigate('Home')}
-            />
-          )}
+          {(props) => <MainTabsScreen {...props} onLogout={onLogout} />}
         </Stack.Screen>
-        <Stack.Screen name="MissionIntro" component={MissionIntroScreen} />
-        <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
-        <Stack.Screen name="TeamOrg" component={TeamOrgScreen} />
-        <Stack.Screen name="MongolianWorship" component={MongolianWorshipScreen} />
-        <Stack.Screen name="PrepMeeting" component={PrepMeetingScreen} />
+        <Stack.Screen
+          name="MissionIntro"
+          getComponent={() => require('../screens/MissionIntroScreen').default}
+        />
+        <Stack.Screen
+          name="Announcements"
+          getComponent={() => require('../screens/AnnouncementsScreen').default}
+        />
+        <Stack.Screen
+          name="TeamOrg"
+          getComponent={() => require('../screens/TeamOrgScreen').default}
+        />
+        <Stack.Screen
+          name="MongolianWorship"
+          getComponent={() => require('../screens/MongolianWorshipScreen').default}
+        />
+        <Stack.Screen
+          name="PrepMeeting"
+          getComponent={() => require('../screens/PrepMeetingScreen').default}
+        />
       </Stack.Navigator>
     </NotificationProvider>
   );

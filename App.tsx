@@ -1,11 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import LoginScreen from './src/screens/LoginScreen';
-import RootNavigator from './src/navigation/RootNavigator';
 import { getSession } from './src/utils/auth';
+
+const RootNavigator = React.lazy(() => import('./src/navigation/RootNavigator'));
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +43,15 @@ export default function App() {
     <SafeAreaProvider>
       <NavigationContainer>
         {isLoggedIn ? (
-          <RootNavigator onLogout={handleLogout} />
+          <Suspense
+            fallback={
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#2563EB" />
+              </View>
+            }
+          >
+            <RootNavigator onLogout={handleLogout} />
+          </Suspense>
         ) : (
           <LoginScreen onLoginSuccess={handleLoginSuccess} />
         )}
