@@ -11,6 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#E6F4FE"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yeun.riseupmongolia",
@@ -25,14 +28,14 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-asset",
+      "expo-dev-client",
       [
         "expo-image-picker",
         {

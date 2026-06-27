@@ -1,0 +1,22 @@
+// PDF page-02, 08, 13, 18 = 몽골 찬양 1~4 구분页 (표시 제외)
+export const WORSHIP_PAGES = [
+  require('../../assets/images/worship-pages/page-01.jpg'),
+  require('../../assets/images/worship-pages/page-03.jpg'),
+  require('../../assets/images/worship-pages/page-04.jpg'),
+  require('../../assets/images/worship-pages/page-05.jpg'),
+  require('../../assets/images/worship-pages/page-06.jpg'),
+  require('../../assets/images/worship-pages/page-07.jpg'),
+  require('../../assets/images/worship-pages/page-09.jpg'),
+  require('../../assets/images/worship-pages/page-10.jpg'),
+  require('../../assets/images/worship-pages/page-11.jpg'),
+  require('../../assets/images/worship-pages/page-12.jpg'),
+  require('../../assets/images/worship-pages/page-14.jpg'),
+  require('../../assets/images/worship-pages/page-15.jpg'),
+  require('../../assets/images/worship-pages/page-16.jpg'),
+  require('../../assets/images/worship-pages/page-17.jpg'),
+  require('../../assets/images/worship-pages/page-19.jpg'),
+  require('../../assets/images/worship-pages/page-20.jpg'),
+  require('../../assets/images/worship-pages/page-21.jpg'),
+  require('../../assets/images/worship-pages/page-22.jpg'),
+  require('../../assets/images/worship-pages/page-23.jpg'),
+] as const;

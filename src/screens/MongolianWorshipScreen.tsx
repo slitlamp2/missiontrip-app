@@ -1,109 +1,61 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, View, Text } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import {
+  Image,
+  LayoutChangeEvent,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Asset } from 'expo-asset';
-import { WebView } from 'react-native-webview';
 import StackScreenHeader from '../components/StackScreenHeader';
-
-function buildPdfHtml(base64: string): string {
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { width: 100%; height: 100%; background: #fff; }
-  embed { width: 100%; height: 100%; }
-</style>
-</head>
-<body>
-<embed src="data:application/pdf;base64,${base64}" type="application/pdf" width="100%" height="100%" />
-</body>
-</html>`;
-}
-
-async function loadPdfContent(): Promise<
-  { mode: 'uri'; uri: string } | { mode: 'html'; html: string }
-> {
-  const worshipPdf = require('../../assets/documents/mongol-worship-conti.pdf');
-  const asset = Asset.fromModule(worshipPdf);
-  await asset.downloadAsync();
-  const localUri = asset.localUri ?? asset.uri;
-
-  if (Platform.OS === 'ios') {
-    return { mode: 'uri', uri: localUri };
-  }
-
-  // Android 전용: expo-file-system은 iOS 네이티브 링크 제외
-  const FileSystem = require('expo-file-system') as typeof import('expo-file-system');
-  const base64 = await FileSystem.readAsStringAsync(localUri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
-  return { mode: 'html', html: buildPdfHtml(base64) };
-}
+import { WORSHIP_PAGES } from '../data/worshipPages';
 
 export default function MongolianWorshipScreen() {
   const navigation = useNavigation();
-  const [content, setContent] = useState<
-    | { mode: 'uri'; uri: string }
-    | { mode: 'html'; html: string }
-    | { mode: 'error'; message: string }
-    | null
-  >(null);
+  const { width: screenWidth } = useWindowDimensions();
+  const [viewportHeight, setViewportHeight] = useState(0);
 
-  useEffect(() => {
-    void (async () => {
-      try {
-        setContent(await loadPdfContent());
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : '파일을 불러올 수 없습니다.';
-        setContent({ mode: 'error', message: msg });
-      }
-    })();
+  const onPagerLayout = useCallback((event: LayoutChangeEvent) => {
+    const nextHeight = Math.floor(event.nativeEvent.layout.height);
+    if (nextHeight > 0) {
+      setViewportHeight(nextHeight);
+    }
   }, []);
+
+  const sheetTotal = WORSHIP_PAGES.length - 1;
 
   return (
     <View style={styles.container}>
       <StackScreenHeader title="몽골어찬양 🎵" onBack={() => navigation.goBack()} />
 
-      {content === null ? (
-        <View style={styles.loaderWrap}>
-          <ActivityIndicator size="large" color="#F97316" />
-        </View>
-      ) : content.mode === 'error' ? (
-        <View style={styles.loaderWrap}>
-          <Text style={styles.errorText}>파일을 불러오지 못했습니다.{'\n'}{content.message}</Text>
-        </View>
-      ) : content.mode === 'uri' ? (
-        <WebView
-          source={{ uri: content.uri }}
-          style={styles.webview}
-          originWhitelist={['*']}
-          allowingReadAccessToURL={content.uri}
-          startInLoadingState
-          renderLoading={() => (
-            <View style={styles.loaderWrap}>
-              <ActivityIndicator size="large" color="#F97316" />
-            </View>
-          )}
-        />
-      ) : (
-        <WebView
-          source={{ html: content.html }}
-          style={styles.webview}
-          originWhitelist={['*']}
-          allowFileAccess
-          allowFileAccessFromFileURLs
-          allowUniversalAccessFromFileURLs
-          mixedContentMode="always"
-          startInLoadingState
-          renderLoading={() => (
-            <View style={styles.loaderWrap}>
-              <ActivityIndicator size="large" color="#F97316" />
-            </View>
-          )}
-        />
-      )}
+      <View style={styles.pagerHost} onLayout={onPagerLayout}>
+        {viewportHeight > 0 ? (
+          <ScrollView
+            pagingEnabled
+            decelerationRate="fast"
+            showsVerticalScrollIndicator={false}
+            style={styles.pager}
+          >
+            {WORSHIP_PAGES.map((page, index) => (
+              <View
+                key={index}
+                style={[styles.pageSlot, { width: screenWidth, height: viewportHeight }]}
+              >
+                <Image source={page} style={styles.pageImage} resizeMode="contain" />
+                {index > 0 ? (
+                  <View style={styles.pageBadge}>
+                    <Text style={styles.pageBadgeText}>
+                      {index} / {sheetTotal}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            ))}
+          </ScrollView>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -113,21 +65,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  webview: {
+  pagerHost: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
-  loaderWrap: {
+  pager: {
     flex: 1,
+  },
+  pageSlot: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
   },
-  errorText: {
-    fontSize: 14,
-    color: '#EF4444',
-    textAlign: 'center',
-    lineHeight: 22,
+  pageImage: {
+    width: '100%',
+    height: '100%',
+  },
+  pageBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 14,
+    backgroundColor: 'rgba(15, 23, 42, 0.72)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
+  pageBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });
