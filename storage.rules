@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isTripMember(tripId) {
+      return signedIn()
+        && request.auth.uid in firestore.get(/databases/(default)/documents/trips/$(tripId)).data.memberIds;
+    }
+
+    // --- 몽골선교 공유 앨범 ---
+    match /missions/{missionId}/{allPaths=**} {
+      allow read, write: if signedIn();
+    }
+
+    // --- 여행주권 ---
+    match /trips/{tripId}/{allPaths=**} {
+      allow read, write: if isTripMember(tripId);
+    }
+
+    match /tickets/{allPaths=**} {
+      allow read, write: if signedIn();
+    }
+    match /trip-album/{fileName} {
+      allow read, write: if signedIn();
+    }
+    match /expense-receipts/{allPaths=**} {
+      allow read, write: if signedIn();
+    }
+  }
+}

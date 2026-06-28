@@ -6,6 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import LoginScreen from './src/screens/LoginScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 import { getSession } from './src/utils/auth';
+import { initFirebase } from './src/lib/firebase';
+import { ensureFirebaseAuth } from './src/lib/firebaseAuth';
 
 class AppErrorBoundary extends React.Component<
   { children: ReactNode },
@@ -36,7 +38,15 @@ export default function App() {
 
   const checkSession = useCallback(async () => {
     try {
+      initFirebase();
       const session = await getSession();
+      if (session) {
+        try {
+          await ensureFirebaseAuth();
+        } catch {
+          // 오프라인 등 — 로컬 세션은 유지
+        }
+      }
       setIsLoggedIn(!!session);
     } catch {
       setIsLoggedIn(false);

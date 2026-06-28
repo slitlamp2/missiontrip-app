@@ -7,6 +7,7 @@ export interface UploadQueueItem {
   localUri: string;
   uploaderId: string;
   uploaderName: string;
+  mimeType?: string;
   createdAt: string;
 }
 

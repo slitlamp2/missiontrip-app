@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import usersData from '../data/users.json';
 import { saveSession, verifyPin } from '../utils/auth';
+import { ensureFirebaseAuth } from '../lib/firebaseAuth';
 import type { User } from '../types';
 
 const users = usersData as User[];
@@ -52,6 +53,11 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     setIsLoading(true);
     try {
       await saveSession({ id: selectedUser.id, name: selectedUser.name });
+      try {
+        await ensureFirebaseAuth();
+      } catch {
+        // 오프라인 등으로 Firebase 연결 실패해도 로컬 로그인은 허용
+      }
       onLoginSuccess();
     } catch {
       setError('로그인 저장에 실패했습니다. 다시 시도해주세요.');

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { clearSession, getSession } from '../utils/auth';
+import { signOutFirebaseAuth } from '../lib/firebaseAuth';
 import { useNotifications } from '../context/NotificationContext';
 import NotificationBellButton from './NotificationBellButton';
 import { theme } from '../constants/theme';
@@ -45,6 +46,7 @@ export default function AppHeader({ title, onLogout, onGoHome }: AppHeaderProps)
         onPress: async () => {
           setIsLoggingOut(true);
           try {
+            await signOutFirebaseAuth();
             await clearSession();
             onLogout();
           } catch {
