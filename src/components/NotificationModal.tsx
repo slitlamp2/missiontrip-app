@@ -23,6 +23,7 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '../utils/notifications';
+import FormattedText from './FormattedText';
 import { theme } from '../constants/theme';
 
 interface NotificationModalProps {
@@ -90,9 +91,9 @@ function NotificationRow({
         ) : null}
       </View>
       <Text style={[styles.rowTitle, !isRead && styles.rowTitleUnread]}>{item.title}</Text>
-      <Text style={styles.rowBody} numberOfLines={4}>
+      <FormattedText style={styles.rowBody} numberOfLines={4}>
         {item.body}
-      </Text>
+      </FormattedText>
       <Text style={styles.rowMeta}>
         {item.authorName ? `${item.authorName} · ` : ''}
         {item.dayLabel ? `${item.dayLabel} · ` : ''}

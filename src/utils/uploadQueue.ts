@@ -8,6 +8,8 @@ export interface UploadQueueItem {
   uploaderId: string;
   uploaderName: string;
   mimeType?: string;
+  width?: number;
+  height?: number;
   createdAt: string;
 }
 

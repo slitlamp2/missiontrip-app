@@ -14,6 +14,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { deleteObject, getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
 
 import type { AlbumPhoto, AlbumPhotoDoc } from '../types/album';
+import { prepareAlbumImageForUpload } from '../utils/albumImagePrep';
 import { getFirebaseStorageBucket, getFirestoreDb } from './firebase';
 
 /** 몽골선교 팀 공유 앨범 ID (단일 미션) */
@@ -55,6 +56,7 @@ export async function uploadAlbumPhotoFromUri(
   uploader: { id: string; name: string },
   mimeHint?: string,
   missionId: string = MISSION_ALBUM_ID,
+  dimensions?: { width?: number; height?: number },
 ): Promise<void> {
   const db = getFirestoreDb();
   const storage = getFirebaseStorageBucket();
@@ -62,14 +64,21 @@ export async function uploadAlbumPhotoFromUri(
     throw new Error('Firebase 미초기화');
   }
 
-  const response = await fetch(localUri);
+  const prepared = await prepareAlbumImageForUpload({
+    uri: localUri,
+    width: dimensions?.width,
+    height: dimensions?.height,
+    mimeType: mimeHint,
+  });
+
+  const response = await fetch(prepared.uri);
   if (!response.ok) {
     throw new Error('사진을 읽지 못했습니다');
   }
 
   const blob = await response.blob();
-  const mime = mimeHint || blob.type || 'image/jpeg';
-  const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+  const mime = prepared.mimeType;
+  const ext = 'jpg';
 
   const refDoc = doc(collection(db, albumPath(missionId)));
   const path = `missions/${missionId}/album/${refDoc.id}.${ext}`;
@@ -93,7 +102,7 @@ export async function uploadAlbumPhotoFromUri(
 export type AlbumUploadProgress = { done: number; total: number };
 
 export async function uploadAlbumPhotosFromUris(
-  assets: { uri: string; mimeType?: string | null }[],
+  assets: { uri: string; mimeType?: string | null; width?: number; height?: number }[],
   uploader: { id: string; name: string },
   onProgress?: (progress: AlbumUploadProgress) => void,
   missionId: string = MISSION_ALBUM_ID,
@@ -105,7 +114,13 @@ export async function uploadAlbumPhotosFromUris(
   for (let i = 0; i < assets.length; i++) {
     const asset = assets[i];
     try {
-      await uploadAlbumPhotoFromUri(asset.uri, uploader, asset.mimeType ?? undefined, missionId);
+      await uploadAlbumPhotoFromUri(
+        asset.uri,
+        uploader,
+        asset.mimeType ?? undefined,
+        missionId,
+        { width: asset.width, height: asset.height },
+      );
       uploaded += 1;
     } catch {
       failed += 1;
@@ -121,11 +136,15 @@ export async function uploadAlbumPhotoFromQueueItem(item: {
   uploaderId: string;
   uploaderName: string;
   mimeType?: string;
+  width?: number;
+  height?: number;
 }): Promise<void> {
   await uploadAlbumPhotoFromUri(
     item.localUri,
     { id: item.uploaderId, name: item.uploaderName },
     item.mimeType,
+    MISSION_ALBUM_ID,
+    { width: item.width, height: item.height },
   );
 }
 

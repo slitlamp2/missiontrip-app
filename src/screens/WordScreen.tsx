@@ -5,8 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
+  Linking,
 } from 'react-native';
 import contentsData from '../data/contents.json';
+import { PRAISE_SHEET_IMAGES } from '../data/praiseSheets';
 import type { Contents } from '../types';
 
 const contents = contentsData as Contents;
@@ -61,21 +64,42 @@ export default function WordScreen() {
                 </View>
                 <Text style={styles.cardTitle}>{devotion.title}</Text>
                 <Text style={styles.verse}>{devotion.verse}</Text>
+                {devotion.verseText ? (
+                  <View style={styles.verseTextBox}>
+                    <Text style={styles.verseText}>{devotion.verseText}</Text>
+                  </View>
+                ) : null}
                 <Text style={styles.bodyText}>{devotion.text}</Text>
               </View>
             ))
-          : contents.praises.map((praise) => (
+          : contents.praises.map((praise, index) => {
+              const sheetImage =
+                praise.sheetImageUri != null
+                  ? PRAISE_SHEET_IMAGES[praise.sheetImageUri]
+                  : undefined;
+
+              return (
               <View key={praise.id} style={styles.card}>
+                <View style={styles.dayBadge}>
+                  <Text style={styles.dayBadgeText}>찬양 {index + 1}</Text>
+                </View>
                 <Text style={styles.cardTitle}>{praise.title}</Text>
                 <Text style={styles.artist}>{praise.artist}</Text>
-                <View style={styles.lyricsBox}>
-                  <Text style={styles.lyrics}>{praise.lyrics}</Text>
-                </View>
-                {praise.sheetImageUri ? (
-                  <Text style={styles.sheetNote}>악보 이미지 포함</Text>
+                {sheetImage ? (
+                  <Image source={sheetImage} style={styles.sheetImage} resizeMode="contain" />
+                ) : null}
+                {praise.youtubeUrl ? (
+                  <TouchableOpacity
+                    style={styles.youtubeButton}
+                    onPress={() => void Linking.openURL(praise.youtubeUrl!)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.youtubeButtonText}>▶ YouTube에서 듣기</Text>
+                  </TouchableOpacity>
                 ) : null}
               </View>
-            ))}
+            );
+            })}
       </ScrollView>
     </View>
   );
@@ -150,31 +174,49 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#2563EB',
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  verseTextBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: '#2563EB',
+  },
+  verseText: {
+    fontSize: 14,
+    color: '#1E293B',
+    lineHeight: 26,
   },
   artist: {
     fontSize: 13,
     color: '#64748B',
     marginBottom: 12,
   },
+  sheetImage: {
+    width: '100%',
+    height: 420,
+    marginBottom: 12,
+    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+  },
+  youtubeButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  youtubeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
   bodyText: {
     fontSize: 14,
     color: '#334155',
     lineHeight: 24,
-  },
-  lyricsBox: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 14,
-  },
-  lyrics: {
-    fontSize: 14,
-    color: '#334155',
-    lineHeight: 24,
-  },
-  sheetNote: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginTop: 10,
   },
 });

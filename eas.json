@@ -15,15 +15,20 @@
       }
     },
     "apk": {
+      "environment": "production",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
+      "environment": "production",
       "autoIncrement": true,
       "distribution": "store",
-      "ios": {}
+      "ios": {},
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {

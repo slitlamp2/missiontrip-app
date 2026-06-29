@@ -274,7 +274,7 @@ export default function AlbumScreen() {
         allowsEditing: false,
         allowsMultipleSelection: true,
         selectionLimit: MAX_UPLOAD_BATCH,
-        quality: 0.85,
+        quality: 1,
       });
 
       if (result.canceled || !result.assets?.length) return;
@@ -287,7 +287,12 @@ export default function AlbumScreen() {
         try {
           await ensureFirebaseAuth();
           const { uploaded, failed } = await uploadAlbumPhotosFromUris(
-            assets.map((asset) => ({ uri: asset.uri, mimeType: asset.mimeType })),
+            assets.map((asset) => ({
+              uri: asset.uri,
+              mimeType: asset.mimeType,
+              width: asset.width,
+              height: asset.height,
+            })),
             { id: currentSession.id, name: currentSession.name },
             (progress) => setUploadProgress(progress),
           );
@@ -310,6 +315,8 @@ export default function AlbumScreen() {
             uploaderId: currentSession.id,
             uploaderName: currentSession.name,
             mimeType: asset.mimeType ?? undefined,
+            width: asset.width,
+            height: asset.height,
           });
         }
         await refreshQueue();
@@ -415,7 +422,7 @@ export default function AlbumScreen() {
             <ActivityIndicator size="small" color="#2563EB" />
             <Text style={styles.processingText}>
               {uploadProgress
-                ? `업로드 중 ${uploadProgress.done}/${uploadProgress.total}`
+                ? `압축·업로드 중 ${uploadProgress.done}/${uploadProgress.total}`
                 : '업로드 처리 중...'}
             </Text>
           </View>

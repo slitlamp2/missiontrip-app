@@ -83,7 +83,11 @@ function sortNotifications(items: AppNotification[]): AppNotification[] {
   return items.sort((a, b) => {
     const aTime = a.createdAt ?? `${a.date}T${a.time ?? '00:00'}`;
     const bTime = b.createdAt ?? `${b.date}T${b.time ?? '00:00'}`;
-    return bTime.localeCompare(aTime);
+    const byDate = aTime.localeCompare(bTime);
+    if (byDate !== 0) {
+      return byDate;
+    }
+    return a.id.localeCompare(b.id);
   });
 }
 

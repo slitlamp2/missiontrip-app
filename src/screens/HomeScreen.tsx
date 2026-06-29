@@ -66,15 +66,6 @@ const MENU_ITEMS = [
     accent: '#D97706',
     bg: '#FFFBEB',
   },
-  {
-    id: 'prep',
-    route: 'PrepMeeting' as const,
-    emoji: '🤝',
-    title: '준비모임',
-    subtitle: '전체 · 조별 모임',
-    accent: '#F97316',
-    bg: '#FFF7ED',
-  },
 ];
 
 export default function HomeScreen({ onLogout }: HomeScreenProps) {

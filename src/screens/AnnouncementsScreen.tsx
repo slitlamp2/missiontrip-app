@@ -15,6 +15,7 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import StackScreenHeader from '../components/StackScreenHeader';
 import ScreenTabBar, { type TabKey } from '../components/ScreenTabBar';
+import FormattedText from '../components/FormattedText';
 import { getSession, type UserSession } from '../utils/auth';
 import {
   buildNotifications,
@@ -57,7 +58,7 @@ function NoticeCard({
         ) : null}
       </View>
       <Text style={styles.cardTitle}>{item.title}</Text>
-      <Text style={styles.cardBody}>{item.body}</Text>
+      <FormattedText style={styles.cardBody}>{item.body}</FormattedText>
       <Text style={styles.cardMeta}>
         {item.authorName ? `${item.authorName} · ` : ''}
         {formatDate(item.date)}

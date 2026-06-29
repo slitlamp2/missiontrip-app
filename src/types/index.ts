@@ -53,9 +53,7 @@ export interface MealDay {
 
 export type SectionContentKey =
   | 'missionIntro'
-  | 'teamOrg'
-  | 'prepMeetingAll'
-  | 'prepMeetingGroup';
+  | 'teamOrg';
 
 export interface SectionContent {
   body: string;
@@ -70,6 +68,7 @@ export interface Devotion {
   date: string;
   title: string;
   verse: string;
+  verseText?: string;
   text: string;
 }
 
@@ -78,6 +77,7 @@ export interface Praise {
   title: string;
   artist: string;
   sheetImageUri: string | null;
+  youtubeUrl?: string | null;
   lyrics: string;
 }
 
