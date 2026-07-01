@@ -1,20 +1,26 @@
 rules_version = '2';
+// spain0511 공용 — mongolia-mission-app + yeohaeng-jugwon 동일 파일 유지
+// 변경 후: npm run sync:firebase-rules → firebase deploy --only firestore:rules,storage
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() {
       return request.auth != null;
     }
 
-    function tripDoc(tripId) {
-      return get(/databases/$(database)/documents/trips/$(tripId));
-    }
-
     function isTripMember(tripId) {
+      let trip = get(/databases/$(database)/documents/trips/$(tripId));
       return signedIn()
-        && request.auth.uid in tripDoc(tripId).data.memberIds;
+        && trip.data != null
+        && (
+          trip.data.ownerId == request.auth.uid
+          || (
+            trip.data.keys().hasAll(['memberIds'])
+            && request.auth.uid in trip.data.memberIds
+          )
+        );
     }
 
-    // --- 몽골선교 공유 앨범 (missions/riseup-mongolia-2026/albumPhotos) ---
+    // --- 몽골선교 (missions/riseup-mongolia-2026/albumPhotos) ---
     match /missions/{missionId}/albumPhotos/{photoId} {
       allow read, create: if signedIn();
       allow delete: if signedIn();
@@ -29,15 +35,27 @@ service cloud.firestore {
 
     match /trips/{tripId} {
       allow read: if signedIn()
-        && request.auth.uid in resource.data.memberIds;
+        && (
+          resource.data.ownerId == request.auth.uid
+          || (
+            resource.data.keys().hasAll(['memberIds'])
+            && request.auth.uid in resource.data.memberIds
+          )
+        );
 
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.auth.uid in request.resource.data.memberIds;
 
       allow update: if signedIn()
-        && request.auth.uid in resource.data.memberIds
-        && request.resource.data.ownerId == resource.data.ownerId;
+        && request.resource.data.ownerId == resource.data.ownerId
+        && (
+          resource.data.ownerId == request.auth.uid
+          || (
+            resource.data.keys().hasAll(['memberIds'])
+            && request.auth.uid in resource.data.memberIds
+          )
+        );
 
       allow delete: if signedIn()
         && resource.data.ownerId == request.auth.uid;

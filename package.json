@@ -10,7 +10,9 @@
     "web": "expo start --web",
     "build:ios": "eas build --platform ios --profile production",
     "build:apk": "eas build --platform android --profile apk",
-    "submit:ios": "eas submit --platform ios --latest"
+    "submit:ios": "eas submit --platform ios --latest",
+    "sync:firebase-rules": "node scripts/sync-firebase-rules.mjs",
+    "deploy:firebase-rules": "npm run sync:firebase-rules && firebase deploy --only firestore:rules,storage"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.23.1",

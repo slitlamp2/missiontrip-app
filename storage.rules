@@ -1,31 +1,31 @@
 rules_version = '2';
+// spain0511 공용 — mongolia-mission-app + yeohaeng-jugwon 동일 파일 유지
+// trips/ Storage는 signedIn() — Firestore에서 데이터 접근 제한
+// 변경 후: npm run sync:firebase-rules → firebase deploy --only firestore:rules,storage
 service firebase.storage {
   match /b/{bucket}/o {
     function signedIn() {
       return request.auth != null;
     }
 
-    function isTripMember(tripId) {
-      return signedIn()
-        && request.auth.uid in firestore.get(/databases/(default)/documents/trips/$(tripId)).data.memberIds;
-    }
-
-    // --- 몽골선교 공유 앨범 ---
+    // --- 몽골선교 (missions/.../album/) ---
     match /missions/{missionId}/{allPaths=**} {
       allow read, write: if signedIn();
     }
 
-    // --- 여행주권 ---
+    // --- 여행주권 (trips/.../tickets/, album/) ---
     match /trips/{tripId}/{allPaths=**} {
-      allow read, write: if isTripMember(tripId);
+      allow read, write: if signedIn();
     }
 
     match /tickets/{allPaths=**} {
       allow read, write: if signedIn();
     }
+
     match /trip-album/{fileName} {
       allow read, write: if signedIn();
     }
+
     match /expense-receipts/{allPaths=**} {
       allow read, write: if signedIn();
     }
