@@ -27,7 +27,7 @@
     "android": {
       "package": "com.yeun.riseupmongolia",
       "adaptiveIcon": {
-        "backgroundColor": "#1C1F26",
+        "backgroundColor": "#87CEEB",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
