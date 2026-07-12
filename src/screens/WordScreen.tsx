@@ -5,11 +5,13 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Linking,
 } from 'react-native';
 import contentsData from '../data/contents.json';
 import { PRAISE_SHEET_IMAGES } from '../data/praiseSheets';
+import PinchZoomView from '../components/PinchZoomView';
+import ZoomableImage from '../components/ZoomableImage';
+import ZoomControls from '../components/ZoomControls';
 import type { Contents } from '../types';
 
 const contents = contentsData as Contents;
@@ -27,6 +29,7 @@ type TabKey = 'devotion' | 'praise';
 
 export default function WordScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>('devotion');
+  const [textScale, setTextScale] = useState(1);
 
   return (
     <View style={styles.container}>
@@ -51,27 +54,51 @@ export default function WordScreen() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.zoomToolbar}>
+        <ZoomControls
+          scale={textScale}
+          onScaleChange={setTextScale}
+          minScale={0.9}
+          maxScale={1.8}
+          step={0.1}
+          hint={
+            activeTab === 'devotion'
+              ? '손가락으로 벌리거나 +/− 버튼으로 글자 크기 조절'
+              : '찬양 악보는 이미지를 손가락으로 벌려 확대'
+          }
+        />
+      </View>
+
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === 'devotion'
           ? [...contents.devotions]
               .sort((a, b) => a.date.localeCompare(b.date))
               .map((devotion) => (
-              <View key={devotion.id} style={styles.card}>
-                <View style={styles.dayBadge}>
-                  <Text style={styles.dayBadgeText}>
-                    {DATE_LABELS[devotion.date] ?? devotion.date} · 아침 QT
-                  </Text>
+                <View key={devotion.id} style={styles.card}>
+                  <PinchZoomView
+                    scale={textScale}
+                    onScaleChange={setTextScale}
+                    minScale={0.9}
+                    maxScale={1.8}
+                  >
+                    <View>
+                      <View style={styles.dayBadge}>
+                        <Text style={styles.dayBadgeText}>
+                          {DATE_LABELS[devotion.date] ?? devotion.date} · 아침 QT
+                        </Text>
+                      </View>
+                      <Text style={styles.cardTitle}>{devotion.title}</Text>
+                      <Text style={styles.verse}>{devotion.verse}</Text>
+                      {devotion.verseText ? (
+                        <View style={styles.verseTextBox}>
+                          <Text style={styles.verseText}>{devotion.verseText}</Text>
+                        </View>
+                      ) : null}
+                      <Text style={styles.bodyText}>{devotion.text}</Text>
+                    </View>
+                  </PinchZoomView>
                 </View>
-                <Text style={styles.cardTitle}>{devotion.title}</Text>
-                <Text style={styles.verse}>{devotion.verse}</Text>
-                {devotion.verseText ? (
-                  <View style={styles.verseTextBox}>
-                    <Text style={styles.verseText}>{devotion.verseText}</Text>
-                  </View>
-                ) : null}
-                <Text style={styles.bodyText}>{devotion.text}</Text>
-              </View>
-            ))
+              ))
           : contents.praises.map((praise, index) => {
               const sheetImage =
                 praise.sheetImageUri != null
@@ -79,26 +106,24 @@ export default function WordScreen() {
                   : undefined;
 
               return (
-              <View key={praise.id} style={styles.card}>
-                <View style={styles.dayBadge}>
-                  <Text style={styles.dayBadgeText}>찬양 {index + 1}</Text>
+                <View key={praise.id} style={styles.card}>
+                  <View style={styles.dayBadge}>
+                    <Text style={styles.dayBadgeText}>찬양 {index + 1}</Text>
+                  </View>
+                  <Text style={styles.cardTitle}>{praise.title}</Text>
+                  <Text style={styles.artist}>{praise.artist}</Text>
+                  {sheetImage ? <ZoomableImage source={sheetImage} /> : null}
+                  {praise.youtubeUrl ? (
+                    <TouchableOpacity
+                      style={styles.youtubeButton}
+                      onPress={() => void Linking.openURL(praise.youtubeUrl!)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.youtubeButtonText}>▶ YouTube에서 듣기</Text>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
-                <Text style={styles.cardTitle}>{praise.title}</Text>
-                <Text style={styles.artist}>{praise.artist}</Text>
-                {sheetImage ? (
-                  <Image source={sheetImage} style={styles.sheetImage} resizeMode="contain" />
-                ) : null}
-                {praise.youtubeUrl ? (
-                  <TouchableOpacity
-                    style={styles.youtubeButton}
-                    onPress={() => void Linking.openURL(praise.youtubeUrl!)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.youtubeButtonText}>▶ YouTube에서 듣기</Text>
-                  </TouchableOpacity>
-                ) : null}
-              </View>
-            );
+              );
             })}
       </ScrollView>
     </View>
@@ -112,7 +137,8 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    margin: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
     backgroundColor: '#E2E8F0',
     borderRadius: 10,
     padding: 4,
@@ -138,6 +164,17 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: '#2563EB',
+  },
+  zoomToolbar: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   content: {
     paddingHorizontal: 16,
@@ -193,13 +230,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748B',
     marginBottom: 12,
-  },
-  sheetImage: {
-    width: '100%',
-    height: 420,
-    marginBottom: 12,
-    borderRadius: 10,
-    backgroundColor: '#F8FAFC',
   },
   youtubeButton: {
     alignSelf: 'flex-start',

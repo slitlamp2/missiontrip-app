@@ -6,19 +6,24 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import scheduleData from '../data/schedule.json';
+import ZoomableImage from '../components/ZoomableImage';
 import type { ScheduleDay } from '../types';
 import type { MainTabParamList } from '../navigation/MainTabNavigator';
 
 const schedule = scheduleData as ScheduleDay[];
+const scheduleOverview = require('../../assets/images/schedule-overview.png');
 
 export default function ScheduleScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
+  const { width: screenWidth } = useWindowDimensions();
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const selectedDay = schedule[selectedIndex];
+  const isOverview = selectedIndex === 0;
+  const selectedDay = isOverview ? null : schedule[selectedIndex - 1];
 
   return (
     <View style={styles.container}>
@@ -27,17 +32,29 @@ export default function ScheduleScreen() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.dayTabs}
       >
+        <TouchableOpacity
+          style={[styles.dayTab, selectedIndex === 0 && styles.dayTabActive]}
+          onPress={() => setSelectedIndex(0)}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.dayTabLabel, selectedIndex === 0 && styles.dayTabLabelActive]}>
+            전체 일정
+          </Text>
+          <Text style={[styles.dayTabDate, selectedIndex === 0 && styles.dayTabDateActive]}>
+            시간표
+          </Text>
+        </TouchableOpacity>
         {schedule.map((day, index) => (
           <TouchableOpacity
             key={day.day}
-            style={[styles.dayTab, selectedIndex === index && styles.dayTabActive]}
-            onPress={() => setSelectedIndex(index)}
+            style={[styles.dayTab, selectedIndex === index + 1 && styles.dayTabActive]}
+            onPress={() => setSelectedIndex(index + 1)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.dayTabLabel, selectedIndex === index && styles.dayTabLabelActive]}>
+            <Text style={[styles.dayTabLabel, selectedIndex === index + 1 && styles.dayTabLabelActive]}>
               {day.label}
             </Text>
-            <Text style={[styles.dayTabDate, selectedIndex === index && styles.dayTabDateActive]}>
+            <Text style={[styles.dayTabDate, selectedIndex === index + 1 && styles.dayTabDateActive]}>
               {day.date}
             </Text>
           </TouchableOpacity>
@@ -57,35 +74,55 @@ export default function ScheduleScreen() {
         <Text style={styles.mealButtonArrow}>›</Text>
       </TouchableOpacity>
 
-      <FlatList
-        data={selectedDay.items}
-        keyExtractor={(item, index) => `${selectedDay.day}-${item.time}-${index}`}
-        contentContainerStyle={styles.timeline}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={styles.dayHeader}>
-            <Text style={styles.dayTitle}>{selectedDay.label}</Text>
-            <Text style={styles.daySubtitle}>{selectedDay.date}</Text>
-          </View>
-        }
-        renderItem={({ item, index }) => (
-          <View style={styles.timelineItem}>
-            <View style={styles.timelineLeft}>
-              <Text style={styles.timeText}>{item.time}</Text>
-              <View style={styles.dotColumn}>
-                <View style={styles.dot} />
-                {index < selectedDay.items.length - 1 && <View style={styles.line} />}
+      {isOverview ? (
+        <ScrollView
+          contentContainerStyle={styles.overviewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.overviewTitle}>2026 몽골 단기선교 전체 일정표</Text>
+          <ZoomableImage
+            source={scheduleOverview}
+            style={{
+              width: screenWidth - 16,
+              height: (screenWidth - 16) * (1684 / 1190),
+              borderRadius: 8,
+              backgroundColor: '#FFFFFF',
+              borderWidth: 1,
+              borderColor: '#E2E8F0',
+            }}
+          />
+        </ScrollView>
+      ) : selectedDay ? (
+        <FlatList
+          data={selectedDay.items}
+          keyExtractor={(item, index) => `${selectedDay.day}-${item.time}-${index}`}
+          contentContainerStyle={styles.timeline}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View style={styles.dayHeader}>
+              <Text style={styles.dayTitle}>{selectedDay.label}</Text>
+              <Text style={styles.daySubtitle}>{selectedDay.date}</Text>
+            </View>
+          }
+          renderItem={({ item, index }) => (
+            <View style={styles.timelineItem}>
+              <View style={styles.timelineLeft}>
+                <Text style={styles.timeText}>{item.time}</Text>
+                <View style={styles.dotColumn}>
+                  <View style={styles.dot} />
+                  {index < selectedDay.items.length - 1 && <View style={styles.line} />}
+                </View>
+              </View>
+              <View style={styles.timelineContent}>
+                <Text style={styles.itemTitle}>{item.title}</Text>
+                {item.description ? (
+                  <Text style={styles.itemDescription}>{item.description}</Text>
+                ) : null}
               </View>
             </View>
-            <View style={styles.timelineContent}>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-              {item.description ? (
-                <Text style={styles.itemDescription}>{item.description}</Text>
-              ) : null}
-            </View>
-          </View>
-        )}
-      />
+          )}
+        />
+      ) : null}
     </View>
   );
 }
@@ -164,6 +201,17 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: '#10B981',
+  },
+  overviewContent: {
+    paddingHorizontal: 8,
+    paddingBottom: 16,
+    gap: 4,
+  },
+  overviewTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 2,
   },
   timeline: {
     paddingHorizontal: 16,

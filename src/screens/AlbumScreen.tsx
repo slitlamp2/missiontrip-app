@@ -15,6 +15,7 @@ import { useNetInfo } from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import AlbumVideoPlayer from '../components/AlbumVideoPlayer';
 import * as ImagePicker from 'expo-image-picker';
 import { getSession, type UserSession } from '../utils/auth';
 import { enqueue, getQueue, getQueueCount, dequeue, type UploadQueueItem } from '../utils/uploadQueue';
@@ -30,6 +31,13 @@ import {
   type AlbumBulkSaveProgress,
 } from '../lib/albumService';
 import type { AlbumPhoto } from '../types/album';
+import { isAlbumVideo } from '../types/album';
+import {
+  getMediaKind,
+  MAX_VIDEO_DURATION_MS,
+  MAX_VIDEO_FILE_SIZE_MB,
+  validateVideoAsset,
+} from '../utils/albumMediaLimits';
 
 type GridItem =
   | { type: 'pending'; data: UploadQueueItem }
@@ -270,16 +278,40 @@ export default function AlbumScreen() {
     setIsPicking(true);
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ['images', 'videos'],
         allowsEditing: false,
         allowsMultipleSelection: true,
         selectionLimit: MAX_UPLOAD_BATCH,
         quality: 1,
+        videoExportPreset: ImagePicker.VideoExportPreset.MediumQuality,
       });
 
       if (result.canceled || !result.assets?.length) return;
 
-      const assets = result.assets;
+      const rejected: string[] = [];
+      const assets = result.assets.filter((asset) => {
+        const error = validateVideoAsset(asset);
+        if (error) {
+          rejected.push(error);
+          return false;
+        }
+        return true;
+      });
+
+      if (assets.length === 0) {
+        Alert.alert(
+          '선택 불가',
+          rejected[0] ?? `동영상은 ${MAX_VIDEO_DURATION_MS / 1000}초·${MAX_VIDEO_FILE_SIZE_MB}MB 이하만 올릴 수 있습니다.`,
+        );
+        return;
+      }
+
+      if (rejected.length > 0) {
+        Alert.alert(
+          '일부 항목 제외',
+          `${rejected.length}개 항목이 제한(동영상 ${MAX_VIDEO_DURATION_MS / 1000}초·${MAX_VIDEO_FILE_SIZE_MB}MB)을 넘어 제외되었습니다.`,
+        );
+      }
 
       if (isOnline) {
         setIsProcessing(true);
@@ -292,17 +324,19 @@ export default function AlbumScreen() {
               mimeType: asset.mimeType,
               width: asset.width,
               height: asset.height,
+              mediaType: getMediaKind(asset),
+              durationMs: asset.duration ?? undefined,
             })),
             { id: currentSession.id, name: currentSession.name },
             (progress) => setUploadProgress(progress),
           );
 
           if (failed === 0) {
-            Alert.alert('업로드 완료', `${uploaded}장을 공유 앨범에 올렸습니다.`);
+            Alert.alert('업로드 완료', `${uploaded}개를 공유 앨범에 올렸습니다.`);
           } else if (uploaded === 0) {
-            Alert.alert('업로드 실패', `${failed}장을 올리지 못했습니다. 네트워크를 확인해 주세요.`);
+            Alert.alert('업로드 실패', `${failed}개를 올리지 못했습니다. 네트워크를 확인해 주세요.`);
           } else {
-            Alert.alert('일부만 업로드됨', `${uploaded}장은 올렸고, ${failed}장은 실패했습니다.`);
+            Alert.alert('일부만 업로드됨', `${uploaded}개는 올렸고, ${failed}개는 실패했습니다.`);
           }
         } finally {
           setIsProcessing(false);
@@ -315,6 +349,8 @@ export default function AlbumScreen() {
             uploaderId: currentSession.id,
             uploaderName: currentSession.name,
             mimeType: asset.mimeType ?? undefined,
+            mediaType: getMediaKind(asset),
+            durationMs: asset.duration ?? undefined,
             width: asset.width,
             height: asset.height,
           });
@@ -322,11 +358,11 @@ export default function AlbumScreen() {
         await refreshQueue();
         Alert.alert(
           '오프라인 저장',
-          `${assets.length}장이 대기열에 저장되었습니다. 네트워크 연결 시 자동으로 업로드됩니다.`,
+          `${assets.length}개가 대기열에 저장되었습니다. 네트워크 연결 시 자동으로 업로드됩니다.`,
         );
       }
     } catch {
-      Alert.alert('오류', '사진 선택 중 문제가 발생했습니다.');
+      Alert.alert('오류', '사진·동영상 선택 중 문제가 발생했습니다.');
     } finally {
       setIsPicking(false);
     }
@@ -363,6 +399,10 @@ export default function AlbumScreen() {
   const renderItem = ({ item }: { item: GridItem }) => {
     const uri = item.type === 'pending' ? item.data.localUri : item.data.downloadUrl;
     const isPending = item.type === 'pending';
+    const isVideo =
+      item.type === 'pending'
+        ? item.data.mediaType === 'video'
+        : isAlbumVideo(item.data);
     const uploaderName = item.data.uploaderName;
     const isSelected = item.type === 'uploaded' && selectedIds.includes(item.data.id);
 
@@ -373,7 +413,14 @@ export default function AlbumScreen() {
         onLongPress={() => handleTileLongPress(item)}
         delayLongPress={450}
       >
-        <Image source={{ uri }} style={styles.photo} />
+        {isVideo ? (
+          <View style={styles.videoTile}>
+            <Ionicons name="play-circle" size={34} color="#FFFFFF" />
+            <Text style={styles.videoTileLabel}>동영상</Text>
+          </View>
+        ) : (
+          <Image source={{ uri }} style={styles.photo} />
+        )}
         {isPending && (
           <View style={styles.pendingOverlay}>
             <Text style={styles.pendingText}>대기 중</Text>
@@ -413,7 +460,7 @@ export default function AlbumScreen() {
 
         {queueCount > 0 && (
           <View style={styles.queueBadge}>
-            <Text style={styles.queueBadgeText}>미업로드 {queueCount}장</Text>
+            <Text style={styles.queueBadgeText}>미업로드 {queueCount}개</Text>
           </View>
         )}
 
@@ -434,7 +481,7 @@ export default function AlbumScreen() {
       {photos.length > 0 ? (
         <View style={styles.hintRow}>
           <Text style={styles.hintText}>
-            팀원과 실시간으로 같이 봅니다. 사진을 눌러 저장하거나, 「선택」으로 여러 장을 저장할 수 있어요. 본인이 올린 사진은 삭제할 수 있습니다.
+            팀원과 실시간으로 같이 봅니다. 사진·동영상을 눌러 보거나 저장할 수 있어요. 동영상은 1분·{MAX_VIDEO_FILE_SIZE_MB}MB 이하만 올릴 수 있습니다.
           </Text>
           <Pressable
             onPress={toggleSelectMode}
@@ -448,9 +495,9 @@ export default function AlbumScreen() {
 
       {gridItems.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>아직 공유된 사진이 없습니다</Text>
+          <Text style={styles.emptyTitle}>아직 공유된 사진·동영상이 없습니다</Text>
           <Text style={styles.emptySubtitle}>
-            아래 버튼으로 사진을 추가하세요.{'\n'}
+            아래 버튼으로 사진·동영상을 추가하세요.{'\n'}
             오프라인에서도 대기열에 저장됩니다.
           </Text>
         </View>
@@ -478,7 +525,7 @@ export default function AlbumScreen() {
           {isPicking ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.addButtonText}>+ 사진 추가</Text>
+            <Text style={styles.addButtonText}>+ 사진·동영상 추가</Text>
           )}
         </TouchableOpacity>
       ) : null}
@@ -488,7 +535,7 @@ export default function AlbumScreen() {
           <Text style={styles.selectBarCount}>
             {bulkProgress
               ? `저장 중 ${bulkProgress.done}/${bulkProgress.total}`
-              : `${selectedIds.length}장 선택`}
+              : `${selectedIds.length}개 선택`}
           </Text>
           <View style={styles.selectBarActions}>
             <Pressable
@@ -521,7 +568,11 @@ export default function AlbumScreen() {
         <Pressable style={styles.modalBackdrop} onPress={() => setPreview(null)}>
           <Pressable style={styles.modalInner} onPress={(event) => event.stopPropagation()}>
             {preview ? (
-              <Image source={{ uri: preview.downloadUrl }} style={styles.modalImage} resizeMode="contain" />
+              isAlbumVideo(preview) ? (
+                <AlbumVideoPlayer uri={preview.downloadUrl} style={styles.modalImage} />
+              ) : (
+                <Image source={{ uri: preview.downloadUrl }} style={styles.modalImage} resizeMode="contain" />
+              )
             ) : null}
             <View style={styles.modalActions}>
               {preview ? (
@@ -709,6 +760,19 @@ const styles = StyleSheet.create({
   photo: {
     width: '100%',
     height: '100%',
+  },
+  videoTile: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#1E293B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  videoTileLabel: {
+    color: '#E2E8F0',
+    fontSize: 11,
+    fontWeight: '700',
   },
   pendingOverlay: {
     ...StyleSheet.absoluteFillObject,

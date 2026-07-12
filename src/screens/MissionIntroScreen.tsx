@@ -8,6 +8,7 @@ export default function MissionIntroScreen() {
       sectionKey="missionIntro"
       tabBackgroundColor="#EEF2FF"
       tabActiveColor="#6366F1"
+      showMapLogo
     />
   );
 }

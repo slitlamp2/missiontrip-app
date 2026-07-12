@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { AlbumMediaKind } from './albumMediaLimits';
 
 const QUEUE_KEY = 'mission_app_upload_queue';
 
@@ -8,6 +9,8 @@ export interface UploadQueueItem {
   uploaderId: string;
   uploaderName: string;
   mimeType?: string;
+  mediaType?: AlbumMediaKind;
+  durationMs?: number;
   width?: number;
   height?: number;
   createdAt: string;

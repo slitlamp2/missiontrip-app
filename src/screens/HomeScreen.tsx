@@ -10,6 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AppHeader from '../components/AppHeader';
+import MongoliaMapLogo from '../components/MongoliaMapLogo';
 import { getSession } from '../utils/auth';
 import { theme } from '../constants/theme';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -92,7 +93,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <Text style={styles.heroEmoji}>🇲🇳</Text>
+          <MongoliaMapLogo size={64} style={styles.heroLogo} />
           <Text style={styles.heroTitle}>환영합니다, {userName}님!</Text>
           <Text style={styles.heroSubtitle}>일어나라 빛을 발하라 · 이사야 60:1</Text>
         </View>
@@ -134,8 +135,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 28,
   },
-  heroEmoji: {
-    fontSize: 40,
+  heroLogo: {
     marginBottom: 12,
   },
   heroTitle: {

@@ -15,7 +15,9 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import StackScreenHeader from './StackScreenHeader';
 import ScreenTabBar, { type TabKey } from './ScreenTabBar';
 import FormattedText from './FormattedText';
+import MongoliaMapLogo from './MongoliaMapLogo';
 import { getSession, type UserSession } from '../utils/auth';
+import { hasMongoliaFlagEmoji, stripMongoliaFlagEmoji } from '../utils/mongoliaMapLogo';
 import {
   getDefaultSectionContent,
   getSectionContent,
@@ -29,6 +31,7 @@ interface EditableSectionScreenProps {
   sectionKey: SectionContentKey;
   tabBackgroundColor?: string;
   tabActiveColor?: string;
+  showMapLogo?: boolean;
 }
 
 export default function EditableSectionScreen({
@@ -36,6 +39,7 @@ export default function EditableSectionScreen({
   sectionKey,
   tabBackgroundColor,
   tabActiveColor,
+  showMapLogo = false,
 }: EditableSectionScreenProps) {
   const navigation = useNavigation();
   const [screenTab, setScreenTab] = useState<TabKey>('view');
@@ -119,6 +123,9 @@ export default function EditableSectionScreen({
     ]);
   };
 
+  const displayContent = stripMongoliaFlagEmoji(content);
+  const shouldShowMapLogo = showMapLogo || hasMongoliaFlagEmoji(content);
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -142,7 +149,12 @@ export default function EditableSectionScreen({
           {meta.isCustomized && meta.updatedByName ? (
             <Text style={styles.metaText}>✏️ {meta.updatedByName}님이 수정함</Text>
           ) : null}
-          <FormattedText style={styles.bodyText}>{content}</FormattedText>
+          {shouldShowMapLogo ? (
+            <View style={styles.mapLogoWrap}>
+              <MongoliaMapLogo size={52} />
+            </View>
+          ) : null}
+          <FormattedText style={styles.bodyText}>{displayContent}</FormattedText>
         </ScrollView>
       ) : (
         <ScrollView contentContainerStyle={styles.editContent} keyboardShouldPersistTaps="handled">
@@ -210,6 +222,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#059669',
     marginBottom: 12,
+  },
+  mapLogoWrap: {
+    alignItems: 'center',
+    marginBottom: 16,
   },
   bodyText: {
     fontSize: 15,

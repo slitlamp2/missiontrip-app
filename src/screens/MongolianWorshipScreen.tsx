@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Image,
   LayoutChangeEvent,
   Linking,
+  Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -13,15 +14,21 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import StackScreenHeader from '../components/StackScreenHeader';
+import PinchZoomView from '../components/PinchZoomView';
+import ZoomControls from '../components/ZoomControls';
 import { WORSHIP_PAGE_META } from '../data/worshipPageMeta';
 import { WORSHIP_PAGES } from '../data/worshipPages';
 
 export default function MongolianWorshipScreen() {
   const navigation = useNavigation();
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [viewportHeight, setViewportHeight] = useState(0);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [pageScale, setPageScale] = useState(1);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalScale, setModalScale] = useState(1);
 
   const onPagerLayout = useCallback((event: LayoutChangeEvent) => {
     const nextHeight = Math.floor(event.nativeEvent.layout.height);
@@ -41,12 +48,37 @@ export default function MongolianWorshipScreen() {
     [viewportHeight],
   );
 
+  useEffect(() => {
+    setPageScale(1);
+  }, [currentPageIndex]);
+
   const sheetTotal = WORSHIP_PAGES.length - 1;
   const currentMeta = WORSHIP_PAGE_META[currentPageIndex];
+  const currentPage = WORSHIP_PAGES[currentPageIndex];
+
+  const openModal = () => {
+    setModalScale(pageScale);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setPageScale(modalScale);
+    setModalVisible(false);
+  };
 
   return (
     <View style={styles.container}>
       <StackScreenHeader title="몽골어찬양 🎵" onBack={() => navigation.goBack()} />
+
+      <View style={styles.zoomToolbar}>
+        <ZoomControls
+          scale={pageScale}
+          onScaleChange={setPageScale}
+          minScale={1}
+          maxScale={4}
+          hint="손가락으로 벌리거나 +/− 버튼으로 악보 확대"
+        />
+      </View>
 
       <View style={styles.pagerHost} onLayout={onPagerLayout}>
         {viewportHeight > 0 ? (
@@ -55,6 +87,7 @@ export default function MongolianWorshipScreen() {
             decelerationRate="fast"
             showsVerticalScrollIndicator={false}
             style={styles.pager}
+            scrollEnabled={pageScale <= 1}
             onMomentumScrollEnd={onPageScrollEnd}
           >
             {WORSHIP_PAGES.map((page, index) => (
@@ -62,7 +95,24 @@ export default function MongolianWorshipScreen() {
                 key={index}
                 style={[styles.pageSlot, { width: screenWidth, height: viewportHeight }]}
               >
-                <Image source={page} style={styles.pageImage} resizeMode="contain" />
+                <PinchZoomView
+                  scale={pageScale}
+                  onScaleChange={setPageScale}
+                  minScale={1}
+                  maxScale={4}
+                  style={styles.pageZoomHost}
+                >
+                  <View style={styles.pageContent}>
+                    <Image
+                      source={page}
+                      style={{ width: screenWidth, height: viewportHeight }}
+                      resizeMode="contain"
+                    />
+                    <TouchableOpacity style={styles.expandButton} onPress={openModal} activeOpacity={0.8}>
+                      <Text style={styles.expandButtonText}>전체화면</Text>
+                    </TouchableOpacity>
+                  </View>
+                </PinchZoomView>
                 {index > 0 ? (
                   <View style={styles.pageBadge}>
                     <Text style={styles.pageBadgeText}>
@@ -92,6 +142,41 @@ export default function MongolianWorshipScreen() {
           </TouchableOpacity>
         </View>
       ) : null}
+
+      <Modal visible={modalVisible} animationType="fade" transparent onRequestClose={closeModal}>
+        <GestureHandlerRootView style={styles.modalRoot}>
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalHeader}>
+              <ZoomControls
+                scale={modalScale}
+                onScaleChange={setModalScale}
+                minScale={1}
+                maxScale={5}
+                onClose={closeModal}
+                hint="손가락으로 벌려 확대"
+              />
+            </View>
+            <View style={styles.modalBody}>
+              <PinchZoomView
+                scale={modalScale}
+                onScaleChange={setModalScale}
+                minScale={1}
+                maxScale={5}
+                style={styles.modalZoomHost}
+              >
+                <Image
+                  source={currentPage}
+                  style={{
+                    width: screenWidth - 24,
+                    height: screenHeight * 0.62,
+                  }}
+                  resizeMode="contain"
+                />
+              </PinchZoomView>
+            </View>
+          </View>
+        </GestureHandlerRootView>
+      </Modal>
     </View>
   );
 }
@@ -100,6 +185,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  zoomToolbar: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   pagerHost: {
     flex: 1,
@@ -112,14 +208,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
   },
-  pageImage: {
-    width: '100%',
-    height: '100%',
+  pageZoomHost: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pageContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandButton: {
+    position: 'absolute',
+    top: 10,
+    right: 14,
+    backgroundColor: 'rgba(15, 23, 42, 0.72)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  expandButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   pageBadge: {
     position: 'absolute',
     top: 10,
-    right: 14,
+    left: 14,
     backgroundColor: 'rgba(15, 23, 42, 0.72)',
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -156,5 +271,27 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
+  },
+  modalRoot: {
+    flex: 1,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    paddingTop: 56,
+    paddingHorizontal: 12,
+    paddingBottom: 24,
+  },
+  modalHeader: {
+    marginBottom: 12,
+  },
+  modalBody: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalZoomHost: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

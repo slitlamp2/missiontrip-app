@@ -14,6 +14,13 @@ import * as MediaLibrary from 'expo-media-library';
 import { deleteObject, getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
 
 import type { AlbumPhoto, AlbumPhotoDoc } from '../types/album';
+import { isAlbumVideo } from '../types/album';
+import {
+  extensionForMime,
+  getMediaKind,
+  type AlbumMediaKind,
+  type PickableMediaAsset,
+} from '../utils/albumMediaLimits';
 import { prepareAlbumImageForUpload } from '../utils/albumImagePrep';
 import { getFirebaseStorageBucket, getFirestoreDb } from './firebase';
 
@@ -51,12 +58,30 @@ export function subscribeAlbumPhotos(
   );
 }
 
+export interface AlbumUploadInput {
+  uri: string;
+  mimeType?: string | null;
+  width?: number;
+  height?: number;
+  mediaType?: AlbumMediaKind;
+  durationMs?: number;
+}
+
+async function readUploadBlob(uri: string): Promise<Blob> {
+  const response = await fetch(uri);
+  if (!response.ok) {
+    throw new Error('파일을 읽지 못했습니다');
+  }
+  return response.blob();
+}
+
 export async function uploadAlbumPhotoFromUri(
   localUri: string,
   uploader: { id: string; name: string },
   mimeHint?: string,
   missionId: string = MISSION_ALBUM_ID,
   dimensions?: { width?: number; height?: number },
+  options?: { mediaType?: AlbumMediaKind; durationMs?: number },
 ): Promise<void> {
   const db = getFirestoreDb();
   const storage = getFirebaseStorageBucket();
@@ -64,21 +89,23 @@ export async function uploadAlbumPhotoFromUri(
     throw new Error('Firebase 미초기화');
   }
 
-  const prepared = await prepareAlbumImageForUpload({
-    uri: localUri,
-    width: dimensions?.width,
-    height: dimensions?.height,
-    mimeType: mimeHint,
-  });
+  const mediaType = options?.mediaType ?? 'image';
+  let uploadUri = localUri;
+  let mime = mimeHint ?? (mediaType === 'video' ? 'video/mp4' : 'image/jpeg');
 
-  const response = await fetch(prepared.uri);
-  if (!response.ok) {
-    throw new Error('사진을 읽지 못했습니다');
+  if (mediaType === 'image') {
+    const prepared = await prepareAlbumImageForUpload({
+      uri: localUri,
+      width: dimensions?.width,
+      height: dimensions?.height,
+      mimeType: mimeHint,
+    });
+    uploadUri = prepared.uri;
+    mime = prepared.mimeType;
   }
 
-  const blob = await response.blob();
-  const mime = prepared.mimeType;
-  const ext = 'jpg';
+  const blob = await readUploadBlob(uploadUri);
+  const ext = mediaType === 'video' ? extensionForMime(mime) : 'jpg';
 
   const refDoc = doc(collection(db, albumPath(missionId)));
   const path = `missions/${missionId}/album/${refDoc.id}.${ext}`;
@@ -91,10 +118,15 @@ export async function uploadAlbumPhotoFromUri(
     storagePath: path,
     downloadUrl,
     mimeType: mime,
+    mediaType,
     uploaderId: uploader.id,
     uploaderName: uploader.name,
     createdAt: Timestamp.now(),
   };
+
+  if (mediaType === 'video' && options?.durationMs != null) {
+    payload.durationMs = options.durationMs;
+  }
 
   await setDoc(refDoc, payload);
 }
@@ -102,7 +134,7 @@ export async function uploadAlbumPhotoFromUri(
 export type AlbumUploadProgress = { done: number; total: number };
 
 export async function uploadAlbumPhotosFromUris(
-  assets: { uri: string; mimeType?: string | null; width?: number; height?: number }[],
+  assets: AlbumUploadInput[],
   uploader: { id: string; name: string },
   onProgress?: (progress: AlbumUploadProgress) => void,
   missionId: string = MISSION_ALBUM_ID,
@@ -113,6 +145,7 @@ export async function uploadAlbumPhotosFromUris(
 
   for (let i = 0; i < assets.length; i++) {
     const asset = assets[i];
+    const mediaType = asset.mediaType ?? getMediaKind(asset as PickableMediaAsset);
     try {
       await uploadAlbumPhotoFromUri(
         asset.uri,
@@ -120,6 +153,7 @@ export async function uploadAlbumPhotosFromUris(
         asset.mimeType ?? undefined,
         missionId,
         { width: asset.width, height: asset.height },
+        { mediaType, durationMs: asset.durationMs },
       );
       uploaded += 1;
     } catch {
@@ -136,6 +170,8 @@ export async function uploadAlbumPhotoFromQueueItem(item: {
   uploaderId: string;
   uploaderName: string;
   mimeType?: string;
+  mediaType?: AlbumMediaKind;
+  durationMs?: number;
   width?: number;
   height?: number;
 }): Promise<void> {
@@ -145,6 +181,7 @@ export async function uploadAlbumPhotoFromQueueItem(item: {
     item.mimeType,
     MISSION_ALBUM_ID,
     { width: item.width, height: item.height },
+    { mediaType: item.mediaType, durationMs: item.durationMs },
   );
 }
 
@@ -154,13 +191,13 @@ async function saveAlbumPhotoToDeviceGalleryCore(photo: AlbumPhoto): Promise<voi
     throw new Error('임시 저장 경로를 사용할 수 없습니다');
   }
 
-  const mime = photo.mimeType || 'image/jpeg';
-  const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+  const mime = photo.mimeType || (isAlbumVideo(photo) ? 'video/mp4' : 'image/jpeg');
+  const ext = extensionForMime(mime);
   const path = `${base}album-save-${photo.id}.${ext}`;
   const { uri, status } = await FileSystem.downloadAsync(photo.downloadUrl, path);
   if (status !== 200) {
     await FileSystem.deleteAsync(uri, { idempotent: true }).catch(() => {});
-    throw new Error('사진을 받아오지 못했습니다');
+    throw new Error('파일을 받아오지 못했습니다');
   }
 
   try {
