@@ -153,7 +153,7 @@ export default function MongolianWorshipScreen() {
                 minScale={1}
                 maxScale={5}
                 onClose={closeModal}
-                hint="손가락으로 벌려 확대"
+                hint="확대 후 손가락으로 상하좌우 이동"
               />
             </View>
             <View style={styles.modalBody}>
@@ -162,13 +162,16 @@ export default function MongolianWorshipScreen() {
                 onScaleChange={setModalScale}
                 minScale={1}
                 maxScale={5}
+                enablePan
+                contentWidth={screenWidth - 24}
+                contentHeight={screenHeight * 0.72}
                 style={styles.modalZoomHost}
               >
                 <Image
                   source={currentPage}
                   style={{
                     width: screenWidth - 24,
-                    height: screenHeight * 0.62,
+                    height: screenHeight * 0.72,
                   }}
                   resizeMode="contain"
                 />
@@ -289,6 +292,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   modalZoomHost: {
     alignItems: 'center',
