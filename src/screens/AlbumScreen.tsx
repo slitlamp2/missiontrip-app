@@ -102,20 +102,38 @@ export default function AlbumScreen() {
       return;
     }
 
-    setLoading(true);
-    const unsub = subscribeAlbumPhotos(
-      (data) => {
-        setPhotos(data);
-        setLoading(false);
-        setSyncError(null);
-      },
-      (error) => {
-        setSyncError(error.message);
-        setLoading(false);
-      },
-    );
+    let active = true;
+    let unsub: (() => void) | undefined;
 
-    return unsub;
+    setLoading(true);
+    void (async () => {
+      try {
+        await ensureFirebaseAuth();
+        if (!active) return;
+        unsub = subscribeAlbumPhotos(
+          (data) => {
+            if (!active) return;
+            setPhotos(data);
+            setLoading(false);
+            setSyncError(null);
+          },
+          (error) => {
+            if (!active) return;
+            setSyncError(error.message);
+            setLoading(false);
+          },
+        );
+      } catch (error) {
+        if (!active) return;
+        setSyncError(error instanceof Error ? error.message : '앨범 인증에 실패했습니다.');
+        setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+      unsub?.();
+    };
   }, [firebaseReady]);
 
   useEffect(() => {
