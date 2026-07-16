@@ -1,10 +1,10 @@
 import { manipulateAsync, SaveFormat, type Action } from 'expo-image-manipulator';
 
-/** 긴 변 최대 px — 휴대폰 앨범 보기에 충분한 크기 */
-export const ALBUM_MAX_LONG_EDGE = 1600;
+/** 긴 변 최대 px — 선명도와 업로드 시간 균형 */
+export const ALBUM_MAX_LONG_EDGE = 2048;
 
 /** JPEG 압축 품질 (0~1) */
-export const ALBUM_JPEG_QUALITY = 0.82;
+export const ALBUM_JPEG_QUALITY = 0.9;
 
 export interface AlbumImageSource {
   uri: string;

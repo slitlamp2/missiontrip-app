@@ -20,14 +20,30 @@ type AvExports = {
     resizeMode?: unknown;
     useNativeControls?: boolean;
     shouldPlay?: boolean;
+    isMuted?: boolean;
+    volume?: number;
     onLoadStart?: () => void;
     onReadyForDisplay?: () => void;
     onError?: (error: unknown) => void;
   }>;
   ResizeMode: { CONTAIN: unknown };
+  InterruptionModeIOS: { MixWithOthers: number; DoNotMix: number; DuckOthers: number };
+  InterruptionModeAndroid: { DoNotMix: number; DuckOthers: number };
+  Audio: {
+    setAudioModeAsync: (mode: {
+      playsInSilentModeIOS?: boolean;
+      allowsRecordingIOS?: boolean;
+      staysActiveInBackground?: boolean;
+      shouldDuckAndroid?: boolean;
+      playThroughEarpieceAndroid?: boolean;
+      interruptionModeIOS?: number;
+      interruptionModeAndroid?: number;
+    }) => Promise<void>;
+  };
 };
 
 let avModule: AvExports | null | undefined;
+let audioModeReady: Promise<void> | null = null;
 
 function getAvModule(): AvExports | null {
   if (avModule !== undefined) {
@@ -43,6 +59,29 @@ function getAvModule(): AvExports | null {
   return avModule;
 }
 
+async function ensurePlaybackAudioMode(): Promise<void> {
+  const av = getAvModule();
+  if (!av?.Audio) return;
+
+  if (!audioModeReady) {
+    // iPhone 무음 스위치가 켜져 있어도 미디어 소리가 나도록 playback 세션 활성화.
+    // 이 설정 전에는 측면 볼륨 버튼이 "벨소리"만 올리고 동영상 소리는 안 커질 수 있음.
+    audioModeReady = av.Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      allowsRecordingIOS: false,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: true,
+      playThroughEarpieceAndroid: false,
+      interruptionModeIOS: av.InterruptionModeIOS?.DoNotMix ?? 1,
+      interruptionModeAndroid: av.InterruptionModeAndroid?.DoNotMix ?? 1,
+    }).catch(() => {
+      audioModeReady = null;
+    });
+  }
+
+  await audioModeReady;
+}
+
 export function isAlbumVideoPlaybackAvailable(): boolean {
   return getAvModule() !== null;
 }
@@ -51,10 +90,21 @@ export default function AlbumVideoPlayer({ uri, style }: VideoProps) {
   const av = getAvModule();
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [audioReady, setAudioReady] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
     setErrorMessage(null);
+    setAudioReady(false);
+
+    let active = true;
+    void ensurePlaybackAudioMode().finally(() => {
+      if (active) setAudioReady(true);
+    });
+
+    return () => {
+      active = false;
+    };
   }, [uri]);
 
   if (av === null) {
@@ -73,22 +123,26 @@ export default function AlbumVideoPlayer({ uri, style }: VideoProps) {
 
   return (
     <View style={[styles.playerWrap, style]}>
-      <Video
-        source={{ uri }}
-        style={StyleSheet.absoluteFillObject}
-        resizeMode={ResizeMode.CONTAIN}
-        useNativeControls
-        shouldPlay
-        onLoadStart={() => {
-          setIsLoading(true);
-          setErrorMessage(null);
-        }}
-        onReadyForDisplay={() => setIsLoading(false)}
-        onError={() => {
-          setIsLoading(false);
-          setErrorMessage('동영상을 불러오지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.');
-        }}
-      />
+      {audioReady ? (
+        <Video
+          source={{ uri }}
+          style={StyleSheet.absoluteFillObject}
+          resizeMode={ResizeMode.CONTAIN}
+          useNativeControls
+          shouldPlay
+          isMuted={false}
+          volume={1.0}
+          onLoadStart={() => {
+            setIsLoading(true);
+            setErrorMessage(null);
+          }}
+          onReadyForDisplay={() => setIsLoading(false)}
+          onError={() => {
+            setIsLoading(false);
+            setErrorMessage('동영상을 불러오지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.');
+          }}
+        />
+      ) : null}
 
       {isLoading && !errorMessage ? (
         <View style={styles.loadingOverlay} pointerEvents="none">
