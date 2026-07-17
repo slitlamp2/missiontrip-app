@@ -6,13 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
+  useWindowDimensions,
+  type LayoutChangeEvent,
 } from 'react-native';
 import contentsData from '../data/contents.json';
 import { PRAISE_SHEET_IMAGES } from '../data/praiseSheets';
 import PinchZoomView from '../components/PinchZoomView';
 import ZoomableImage from '../components/ZoomableImage';
 import ZoomControls from '../components/ZoomControls';
-import type { Contents } from '../types';
+import type { Contents, Devotion } from '../types';
 
 const contents = contentsData as Contents;
 
@@ -26,6 +28,59 @@ const DATE_LABELS: Record<string, string> = {
 };
 
 type TabKey = 'devotion' | 'praise';
+
+function DevotionCard({
+  devotion,
+  textScale,
+  onScaleChange,
+}: {
+  devotion: Devotion;
+  textScale: number;
+  onScaleChange: (scale: number) => void;
+}) {
+  const { width: screenWidth } = useWindowDimensions();
+  const [contentSize, setContentSize] = useState({
+    width: Math.max(screenWidth - 72, 280),
+    height: 420,
+  });
+
+  const onContentLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    if (width > 0 && height > 0) {
+      setContentSize({ width, height });
+    }
+  };
+
+  return (
+    <View style={[styles.card, styles.devotionCard]}>
+      <PinchZoomView
+        scale={textScale}
+        onScaleChange={onScaleChange}
+        minScale={0.9}
+        maxScale={1.8}
+        enablePan
+        contentWidth={contentSize.width}
+        contentHeight={contentSize.height}
+      >
+        <View onLayout={onContentLayout}>
+          <View style={styles.dayBadge}>
+            <Text style={styles.dayBadgeText}>
+              {DATE_LABELS[devotion.date] ?? devotion.date} · 아침 QT
+            </Text>
+          </View>
+          <Text style={styles.cardTitle}>{devotion.title}</Text>
+          <Text style={styles.verse}>{devotion.verse}</Text>
+          {devotion.verseText ? (
+            <View style={styles.verseTextBox}>
+              <Text style={styles.verseText}>{devotion.verseText}</Text>
+            </View>
+          ) : null}
+          <Text style={styles.bodyText}>{devotion.text}</Text>
+        </View>
+      </PinchZoomView>
+    </View>
+  );
+}
 
 export default function WordScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>('devotion');
@@ -63,41 +118,27 @@ export default function WordScreen() {
           step={0.1}
           hint={
             activeTab === 'devotion'
-              ? '손가락으로 벌리거나 +/− 버튼으로 글자 크기 조절'
+              ? '확대 후 손가락으로 상하좌우 이동 · +/− 로 글자 크기 조절'
               : '찬양 악보는 이미지를 손가락으로 벌려 확대'
           }
         />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={activeTab !== 'devotion' || textScale <= 1}
+      >
         {activeTab === 'devotion'
           ? [...contents.devotions]
               .sort((a, b) => a.date.localeCompare(b.date))
               .map((devotion) => (
-                <View key={devotion.id} style={styles.card}>
-                  <PinchZoomView
-                    scale={textScale}
-                    onScaleChange={setTextScale}
-                    minScale={0.9}
-                    maxScale={1.8}
-                  >
-                    <View>
-                      <View style={styles.dayBadge}>
-                        <Text style={styles.dayBadgeText}>
-                          {DATE_LABELS[devotion.date] ?? devotion.date} · 아침 QT
-                        </Text>
-                      </View>
-                      <Text style={styles.cardTitle}>{devotion.title}</Text>
-                      <Text style={styles.verse}>{devotion.verse}</Text>
-                      {devotion.verseText ? (
-                        <View style={styles.verseTextBox}>
-                          <Text style={styles.verseText}>{devotion.verseText}</Text>
-                        </View>
-                      ) : null}
-                      <Text style={styles.bodyText}>{devotion.text}</Text>
-                    </View>
-                  </PinchZoomView>
-                </View>
+                <DevotionCard
+                  key={devotion.id}
+                  devotion={devotion}
+                  textScale={textScale}
+                  onScaleChange={setTextScale}
+                />
               ))
           : contents.praises.map((praise, index) => {
               const sheetImage =
@@ -187,6 +228,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#F1F5F9',
+  },
+  devotionCard: {
+    overflow: 'hidden',
   },
   dayBadge: {
     alignSelf: 'flex-start',

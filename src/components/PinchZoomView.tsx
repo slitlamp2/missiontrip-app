@@ -134,7 +134,8 @@ export default function PinchZoomView({
   };
 
   const animatedScale = Animated.multiply(baseScaleAnim, pinchScale);
-  const canPan = enablePan && scale > minScale + 0.01;
+  // 1배 초과일 때만 패닝 — minScale이 1 미만(예: 말씀 글자 축소)이어도 목록 스크롤과 충돌하지 않음
+  const canPan = enablePan && scale > 1.01;
 
   return (
     <PanGestureHandler
