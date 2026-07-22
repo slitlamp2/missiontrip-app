@@ -84,7 +84,7 @@ export default function ScheduleScreen() {
             source={scheduleOverview}
             style={{
               width: screenWidth - 16,
-              height: (screenWidth - 16) * (1684 / 1190),
+              height: (screenWidth - 16) * (1024 / 802),
               borderRadius: 8,
               backgroundColor: '#FFFFFF',
               borderWidth: 1,
