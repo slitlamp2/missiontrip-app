@@ -10,12 +10,15 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  useWindowDimensions,
+  type ImageSourcePropType,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import StackScreenHeader from './StackScreenHeader';
 import ScreenTabBar, { type TabKey } from './ScreenTabBar';
 import FormattedText from './FormattedText';
 import MongoliaMapLogo from './MongoliaMapLogo';
+import ZoomableImage from './ZoomableImage';
 import { getSession, type UserSession } from '../utils/auth';
 import { hasMongoliaFlagEmoji, stripMongoliaFlagEmoji } from '../utils/mongoliaMapLogo';
 import {
@@ -32,6 +35,10 @@ interface EditableSectionScreenProps {
   tabBackgroundColor?: string;
   tabActiveColor?: string;
   showMapLogo?: boolean;
+  /** 본문 텍스트 뒤에 붙일 이미지(예: 참가자 명단 PDF 페이지) */
+  appendixImages?: readonly ImageSourcePropType[];
+  appendixTitle?: string;
+  appendixAspectRatio?: number;
 }
 
 export default function EditableSectionScreen({
@@ -40,7 +47,11 @@ export default function EditableSectionScreen({
   tabBackgroundColor,
   tabActiveColor,
   showMapLogo = false,
+  appendixImages,
+  appendixTitle,
+  appendixAspectRatio = 1.414,
 }: EditableSectionScreenProps) {
+  const { width: screenWidth } = useWindowDimensions();
   const navigation = useNavigation();
   const [screenTab, setScreenTab] = useState<TabKey>('view');
   const [content, setContent] = useState('');
@@ -155,6 +166,29 @@ export default function EditableSectionScreen({
             </View>
           ) : null}
           <FormattedText style={styles.bodyText}>{displayContent}</FormattedText>
+          {appendixImages && appendixImages.length > 0 ? (
+            <View style={styles.appendix}>
+              {appendixTitle ? <Text style={styles.appendixTitle}>{appendixTitle}</Text> : null}
+              {appendixImages.map((source, index) => {
+                const imageWidth = screenWidth - 40;
+                return (
+                  <ZoomableImage
+                    key={`appendix-${index}`}
+                    source={source}
+                    horizontalInset={40}
+                    style={{
+                      width: imageWidth,
+                      height: imageWidth * appendixAspectRatio,
+                      borderRadius: 8,
+                      backgroundColor: '#FFFFFF',
+                      borderWidth: 1,
+                      borderColor: '#E2E8F0',
+                    }}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
         </ScrollView>
       ) : (
         <ScrollView contentContainerStyle={styles.editContent} keyboardShouldPersistTaps="handled">
@@ -231,6 +265,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#334155',
     lineHeight: 24,
+  },
+  appendix: {
+    marginTop: 28,
+    gap: 16,
+  },
+  appendixTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
   },
   editContent: {
     paddingHorizontal: 16,
