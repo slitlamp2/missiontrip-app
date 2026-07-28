@@ -40,6 +40,7 @@ function noticeToNotification(notice: Notice): AppNotification {
     body: notice.body,
     date: notice.date,
     priority: notice.priority,
+    pinned: notice.pinned,
   };
 }
 
@@ -81,13 +82,19 @@ function isImportantItem(item: { title: string; important?: boolean }): boolean 
 
 function sortNotifications(items: AppNotification[]): AppNotification[] {
   return items.sort((a, b) => {
+    const aPinned = a.pinned ? 1 : 0;
+    const bPinned = b.pinned ? 1 : 0;
+    if (aPinned !== bPinned) {
+      return bPinned - aPinned;
+    }
+
     const aTime = a.createdAt ?? `${a.date}T${a.time ?? '00:00'}`;
     const bTime = b.createdAt ?? `${b.date}T${b.time ?? '00:00'}`;
-    const byDate = aTime.localeCompare(bTime);
+    const byDate = bTime.localeCompare(aTime);
     if (byDate !== 0) {
       return byDate;
     }
-    return a.id.localeCompare(b.id);
+    return b.id.localeCompare(a.id);
   });
 }
 

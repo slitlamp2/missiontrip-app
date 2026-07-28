@@ -39,6 +39,7 @@ interface EditableSectionScreenProps {
   appendixImages?: readonly ImageSourcePropType[];
   appendixTitle?: string;
   appendixAspectRatio?: number;
+  appendixAspectRatios?: readonly number[];
 }
 
 export default function EditableSectionScreen({
@@ -50,6 +51,7 @@ export default function EditableSectionScreen({
   appendixImages,
   appendixTitle,
   appendixAspectRatio = 1.414,
+  appendixAspectRatios,
 }: EditableSectionScreenProps) {
   const { width: screenWidth } = useWindowDimensions();
   const navigation = useNavigation();
@@ -171,6 +173,7 @@ export default function EditableSectionScreen({
               {appendixTitle ? <Text style={styles.appendixTitle}>{appendixTitle}</Text> : null}
               {appendixImages.map((source, index) => {
                 const imageWidth = screenWidth - 40;
+                const aspectRatio = appendixAspectRatios?.[index] ?? appendixAspectRatio;
                 return (
                   <ZoomableImage
                     key={`appendix-${index}`}
@@ -178,7 +181,7 @@ export default function EditableSectionScreen({
                     horizontalInset={40}
                     style={{
                       width: imageWidth,
-                      height: imageWidth * appendixAspectRatio,
+                      height: imageWidth * aspectRatio,
                       borderRadius: 8,
                       backgroundColor: '#FFFFFF',
                       borderWidth: 1,

@@ -98,7 +98,7 @@ export default function AnnouncementsScreen() {
   );
 
   const handleDelete = (item: AppNotification) => {
-    if (!session) return;
+    if (!session || item.type !== 'member' || item.authorId !== session.id) return;
 
     Alert.alert('삭제', '이 공지를 삭제할까요?', [
       { text: '취소', style: 'cancel' },
@@ -173,7 +173,9 @@ export default function AnnouncementsScreen() {
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
-              <Text style={styles.listHint}>팀 공지와 팀원 알림을 확인할 수 있어요.</Text>
+              <Text style={styles.listHint}>
+                팀 공지와 팀원 알림을 확인할 수 있어요. 본인이 올린 공지는 삭제할 수 있습니다.
+              </Text>
             }
             ListEmptyComponent={
               <View style={styles.emptyBox}>

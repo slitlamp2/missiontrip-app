@@ -106,6 +106,7 @@ export interface Notice {
   endDate?: string;
   priority: 'high' | 'normal';
   alwaysShow?: boolean;
+  pinned?: boolean;
 }
 
 export type NotificationType = 'notice' | 'schedule' | 'member';
@@ -132,4 +133,5 @@ export interface AppNotification {
   authorId?: string;
   authorName?: string;
   createdAt?: string;
+  pinned?: boolean;
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import EditableSectionScreen from '../components/EditableSectionScreen';
 import {
-  PARTICIPANT_LIST_ASPECT,
+  PARTICIPANT_LIST_ASPECTS,
   PARTICIPANT_LIST_PAGES,
 } from '../data/participantListPages';
 
@@ -14,7 +14,7 @@ export default function TeamOrgScreen() {
       tabActiveColor="#059669"
       appendixTitle="참가자 명단 (현지 청소년)"
       appendixImages={PARTICIPANT_LIST_PAGES}
-      appendixAspectRatio={PARTICIPANT_LIST_ASPECT}
+      appendixAspectRatios={PARTICIPANT_LIST_ASPECTS}
     />
   );
 }

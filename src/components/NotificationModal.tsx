@@ -155,7 +155,7 @@ export default function NotificationModal({ visible, onClose, onUnreadChange }: 
   };
 
   const handleDelete = (item: AppNotification) => {
-    if (!session || item.type !== 'member') return;
+    if (!session || item.type !== 'member' || item.authorId !== session.id) return;
 
     Alert.alert('알림 삭제', '이 알림을 삭제할까요?', [
       { text: '취소', style: 'cancel' },
