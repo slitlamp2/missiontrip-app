@@ -287,9 +287,9 @@ export default function AlbumScreen() {
       return;
     }
 
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('권한 필요', '사진을 선택하려면 갤러리 접근 권한이 필요합니다.');
+    const { ensureMediaLibraryPermission } = await import('../utils/mediaPermissions');
+    const granted = await ensureMediaLibraryPermission();
+    if (!granted) {
       return;
     }
 

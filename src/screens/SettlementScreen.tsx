@@ -29,6 +29,10 @@ import {
 } from '../lib/settlementService';
 import { canAccessSettlement, getSession, type UserSession } from '../utils/auth';
 import {
+  ensureCameraPermission,
+  ensureMediaLibraryPermission,
+} from '../utils/mediaPermissions';
+import {
   SETTLEMENT_CATEGORIES,
   SETTLEMENT_CURRENCIES,
   type SettlementCurrency,
@@ -136,9 +140,8 @@ export default function SettlementScreen() {
   };
 
   const pickReceipt = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('권한 필요', '영수증 사진을 가져오려면 사진 접근 권한이 필요합니다.');
+    const granted = await ensureMediaLibraryPermission();
+    if (!granted) {
       return;
     }
 
@@ -156,9 +159,8 @@ export default function SettlementScreen() {
   };
 
   const takeReceipt = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('권한 필요', '영수증을 찍으려면 카메라 권한이 필요합니다.');
+    const granted = await ensureCameraPermission();
+    if (!granted) {
       return;
     }
 
