@@ -13,6 +13,7 @@ export type RootStackParamList = {
   Announcements: undefined;
   TeamOrg: undefined;
   MongolianWorship: undefined;
+  Settlement: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -60,6 +61,10 @@ export default function RootNavigator({ onLogout }: RootNavigatorProps) {
         <Stack.Screen
           name="MongolianWorship"
           getComponent={() => require('../screens/MongolianWorshipScreen').default}
+        />
+        <Stack.Screen
+          name="Settlement"
+          getComponent={() => require('../screens/SettlementScreen').default}
         />
       </Stack.Navigator>
     </NotificationProvider>

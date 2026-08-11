@@ -1,10 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import type { UserRole } from '../types';
+
 const SESSION_KEY = 'mission_app_session';
 
 export interface UserSession {
   id: string;
   name: string;
+  roles: UserRole[];
   loggedInAt: string;
 }
 
@@ -12,17 +15,29 @@ export interface UserSession {
 export async function getSession(): Promise<UserSession | null> {
   try {
     const raw = await AsyncStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as UserSession) : null;
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw) as UserSession;
+    return {
+      ...parsed,
+      roles: Array.isArray(parsed.roles) ? parsed.roles : [],
+    };
   } catch {
     return null;
   }
 }
 
 /** 로그인 성공 시 세션을 AsyncStorage에 저장합니다. */
-export async function saveSession(user: { id: string; name: string }): Promise<void> {
+export async function saveSession(user: {
+  id: string;
+  name: string;
+  roles?: UserRole[];
+}): Promise<void> {
   const session: UserSession = {
     id: user.id,
     name: user.name,
+    roles: user.roles ?? [],
     loggedInAt: new Date().toISOString(),
   };
   await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -39,4 +54,11 @@ export async function clearSession(): Promise<void> {
  */
 export function verifyPin(storedPin: string, inputPin: string): boolean {
   return storedPin === inputPin.trim();
+}
+
+/** 정산 메뉴 노출 여부 (로컬 roles). 실제 데이터 접근은 Firebase Email 로그인 필요. */
+export function canAccessSettlement(
+  session: Pick<UserSession, 'roles'> | null | undefined,
+): boolean {
+  return Boolean(session?.roles?.includes('settlement'));
 }

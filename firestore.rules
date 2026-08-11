@@ -7,6 +7,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // 정산: Email/Password 계정만 (앨범 익명 로그인 제외)
+    function isSettlementUser() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+
     function isTripMember(tripId) {
       let trip = get(/databases/$(database)/documents/trips/$(tripId));
       return signedIn()
@@ -25,6 +31,11 @@ service cloud.firestore {
       allow read, create: if signedIn();
       allow delete: if signedIn();
       allow update: if false;
+    }
+
+    // --- 몽골선교 정산 (Email/Password 담당자만) ---
+    match /missions/{missionId}/settlementEntries/{entryId} {
+      allow read, create, update, delete: if isSettlementUser();
     }
 
     // --- 여행주권 ---

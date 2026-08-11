@@ -8,6 +8,16 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    function isSettlementUser() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+
+    // --- 몽골선교 정산 영수증 (Email/Password만) ---
+    match /missions/{missionId}/settlementReceipts/{allPaths=**} {
+      allow read, write: if isSettlementUser();
+    }
+
     // --- 몽골선교 (missions/.../album/) ---
     match /missions/{missionId}/{allPaths=**} {
       allow read, write: if signedIn();

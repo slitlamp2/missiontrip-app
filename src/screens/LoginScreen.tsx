@@ -52,7 +52,11 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
     setIsLoading(true);
     try {
-      await saveSession({ id: selectedUser.id, name: selectedUser.name });
+      await saveSession({
+        id: selectedUser.id,
+        name: selectedUser.name,
+        roles: selectedUser.roles,
+      });
       try {
         await ensureFirebaseAuth();
       } catch {

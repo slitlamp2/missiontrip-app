@@ -1,7 +1,11 @@
+export type UserRole = 'settlement';
+
 export interface User {
   id: string;
   name: string;
   pin: string;
+  /** 앱 메뉴 노출용 로컬 역할 (정산 등). 서버 권한과 별개. */
+  roles?: UserRole[];
 }
 
 export interface ScheduleItem {
