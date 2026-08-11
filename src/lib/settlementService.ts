@@ -11,7 +11,13 @@ import {
 } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
 
-import type { SettlementEntry, SettlementEntryDoc, SettlementEntryType } from '../types/settlement';
+import type {
+  SettlementCurrency,
+  SettlementEntry,
+  SettlementEntryDoc,
+  SettlementEntryType,
+} from '../types/settlement';
+import { SETTLEMENT_CURRENCIES } from '../types/settlement';
 import { prepareAlbumImageForUpload } from '../utils/albumImagePrep';
 import { getFirebaseStorageBucket, getFirestoreDb } from './firebase';
 import { MISSION_ALBUM_ID } from './albumService';
@@ -23,8 +29,19 @@ function entriesPath(missionId: string = MISSION_ALBUM_ID): string {
   return `${MISSIONS}/${missionId}/${SUBCOLLECTION}`;
 }
 
+function normalizeCurrency(value: unknown): SettlementCurrency {
+  if (value === 'KRW' || value === 'MNT' || value === 'USD') {
+    return value;
+  }
+  return 'KRW';
+}
+
 function docToEntry(id: string, data: SettlementEntryDoc): SettlementEntry {
-  return { id, ...data };
+  return {
+    id,
+    ...data,
+    currency: normalizeCurrency(data.currency),
+  };
 }
 
 export function subscribeSettlementEntries(
@@ -51,21 +68,46 @@ export function subscribeSettlementEntries(
   );
 }
 
-export function summarizeSettlement(entries: SettlementEntry[]): {
+export interface CurrencySummary {
+  currency: SettlementCurrency;
   income: number;
   expense: number;
   balance: number;
-} {
-  let income = 0;
-  let expense = 0;
-  for (const entry of entries) {
-    if (entry.type === 'income') {
-      income += entry.amount;
-    } else {
-      expense += entry.amount;
-    }
+}
+
+/** 통화별로 수입·지출·잔액을 합산합니다. (환율 환산 없음) */
+export function summarizeSettlementByCurrency(entries: SettlementEntry[]): CurrencySummary[] {
+  const map = new Map<SettlementCurrency, CurrencySummary>();
+
+  for (const option of SETTLEMENT_CURRENCIES) {
+    map.set(option.code, {
+      currency: option.code,
+      income: 0,
+      expense: 0,
+      balance: 0,
+    });
   }
-  return { income, expense, balance: income - expense };
+
+  for (const entry of entries) {
+    const currency = normalizeCurrency(entry.currency);
+    const current = map.get(currency) ?? {
+      currency,
+      income: 0,
+      expense: 0,
+      balance: 0,
+    };
+    if (entry.type === 'income') {
+      current.income += entry.amount;
+    } else {
+      current.expense += entry.amount;
+    }
+    current.balance = current.income - current.expense;
+    map.set(currency, current);
+  }
+
+  return SETTLEMENT_CURRENCIES.map((option) => map.get(option.code)!).filter(
+    (summary) => summary.income !== 0 || summary.expense !== 0,
+  );
 }
 
 async function readUploadBlob(uri: string): Promise<Blob> {
@@ -76,9 +118,17 @@ async function readUploadBlob(uri: string): Promise<Blob> {
   return response.blob();
 }
 
+function normalizeAmount(amount: number, currency: SettlementCurrency): number {
+  if (currency === 'USD') {
+    return Math.round(amount * 100) / 100;
+  }
+  return Math.round(amount);
+}
+
 export interface CreateSettlementInput {
   type: SettlementEntryType;
   amount: number;
+  currency: SettlementCurrency;
   category: string;
   note: string;
   cardLabel: string;
@@ -103,6 +153,7 @@ export async function createSettlementEntry(
     throw new Error('금액을 확인해 주세요.');
   }
 
+  const currency = normalizeCurrency(input.currency);
   const entryRef = doc(collection(db, entriesPath(missionId)));
   const prepared = await prepareAlbumImageForUpload({
     uri: input.receiptUri,
@@ -118,8 +169,8 @@ export async function createSettlementEntry(
   const now = Timestamp.now();
   const payload: SettlementEntryDoc = {
     type: input.type,
-    amount: Math.round(input.amount),
-    currency: 'KRW',
+    amount: normalizeAmount(input.amount, currency),
+    currency,
     category: input.category.trim() || '기타',
     note: input.note.trim(),
     cardLabel: input.cardLabel.trim(),
@@ -155,6 +206,21 @@ export async function deleteSettlementEntry(
   }
 }
 
-export function formatKrw(amount: number): string {
+export function formatMoney(amount: number, currency: SettlementCurrency = 'KRW'): string {
+  const normalized = normalizeCurrency(currency);
+  if (normalized === 'USD') {
+    return `$${amount.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+  if (normalized === 'MNT') {
+    return `${amount.toLocaleString('en-US')}₮`;
+  }
   return `${amount.toLocaleString('ko-KR')}원`;
+}
+
+/** @deprecated formatMoney 사용 */
+export function formatKrw(amount: number): string {
+  return formatMoney(amount, 'KRW');
 }

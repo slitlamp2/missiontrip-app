@@ -23,12 +23,17 @@ import {
 import {
   createSettlementEntry,
   deleteSettlementEntry,
-  formatKrw,
+  formatMoney,
   subscribeSettlementEntries,
-  summarizeSettlement,
+  summarizeSettlementByCurrency,
 } from '../lib/settlementService';
 import { canAccessSettlement, getSession, type UserSession } from '../utils/auth';
-import { SETTLEMENT_CATEGORIES, type SettlementEntry } from '../types/settlement';
+import {
+  SETTLEMENT_CATEGORIES,
+  SETTLEMENT_CURRENCIES,
+  type SettlementCurrency,
+  type SettlementEntry,
+} from '../types/settlement';
 
 type FormType = 'expense' | 'income';
 
@@ -49,6 +54,7 @@ export default function SettlementScreen() {
   const [saving, setSaving] = useState(false);
 
   const [type, setType] = useState<FormType>('expense');
+  const [currency, setCurrency] = useState<SettlementCurrency>('KRW');
   const [amountText, setAmountText] = useState('');
   const [category, setCategory] = useState<string>(SETTLEMENT_CATEGORIES[0]);
   const [cardLabel, setCardLabel] = useState('');
@@ -83,7 +89,7 @@ export default function SettlementScreen() {
     return unsub;
   }, [settlementUserEmail]);
 
-  const summary = useMemo(() => summarizeSettlement(entries), [entries]);
+  const summaries = useMemo(() => summarizeSettlementByCurrency(entries), [entries]);
   const allowed = canAccessSettlement(session);
 
   const handleSettlementLogin = async () => {
@@ -118,6 +124,7 @@ export default function SettlementScreen() {
 
   const resetForm = () => {
     setType('expense');
+    setCurrency('KRW');
     setAmountText('');
     setCategory(SETTLEMENT_CATEGORIES[0]);
     setCardLabel('');
@@ -188,6 +195,7 @@ export default function SettlementScreen() {
       await createSettlementEntry({
         type,
         amount,
+        currency,
         category,
         note,
         cardLabel,
@@ -207,7 +215,10 @@ export default function SettlementScreen() {
   };
 
   const handleDelete = useCallback((entry: SettlementEntry) => {
-    Alert.alert('내역 삭제', `${formatKrw(entry.amount)} 내역을 삭제할까요?`, [
+    Alert.alert(
+      '내역 삭제',
+      `${formatMoney(entry.amount, entry.currency)} 내역을 삭제할까요?`,
+      [
       { text: '취소', style: 'cancel' },
       {
         text: '삭제',
@@ -221,7 +232,8 @@ export default function SettlementScreen() {
           });
         },
       },
-    ]);
+    ],
+    );
   }, []);
 
   if (!authReady || session === undefined) {
@@ -294,20 +306,53 @@ export default function SettlementScreen() {
 
       <View style={styles.summaryCard}>
         <Text style={styles.summaryEmail}>{settlementUserEmail}</Text>
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>수입</Text>
-            <Text style={[styles.summaryValue, styles.income]}>{formatKrw(summary.income)}</Text>
+        {summaries.length === 0 ? (
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>수입</Text>
+              <Text style={[styles.summaryValue, styles.income]}>0원</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>지출</Text>
+              <Text style={[styles.summaryValue, styles.expense]}>0원</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>잔액</Text>
+              <Text style={styles.summaryValue}>0원</Text>
+            </View>
           </View>
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>지출</Text>
-            <Text style={[styles.summaryValue, styles.expense]}>{formatKrw(summary.expense)}</Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>잔액</Text>
-            <Text style={styles.summaryValue}>{formatKrw(summary.balance)}</Text>
-          </View>
-        </View>
+        ) : (
+          summaries.map((summary) => {
+            const label =
+              SETTLEMENT_CURRENCIES.find((item) => item.code === summary.currency)?.label ??
+              summary.currency;
+            return (
+              <View key={summary.currency} style={styles.currencySummaryBlock}>
+                <Text style={styles.currencySummaryTitle}>{label}</Text>
+                <View style={styles.summaryRow}>
+                  <View style={styles.summaryItem}>
+                    <Text style={styles.summaryLabel}>수입</Text>
+                    <Text style={[styles.summaryValue, styles.income]}>
+                      {formatMoney(summary.income, summary.currency)}
+                    </Text>
+                  </View>
+                  <View style={styles.summaryItem}>
+                    <Text style={styles.summaryLabel}>지출</Text>
+                    <Text style={[styles.summaryValue, styles.expense]}>
+                      {formatMoney(summary.expense, summary.currency)}
+                    </Text>
+                  </View>
+                  <View style={styles.summaryItem}>
+                    <Text style={styles.summaryLabel}>잔액</Text>
+                    <Text style={styles.summaryValue}>
+                      {formatMoney(summary.balance, summary.currency)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })
+        )}
         <View style={styles.summaryActions}>
           <TouchableOpacity
             style={[styles.secondaryButton, styles.actionFlex]}
@@ -351,11 +396,12 @@ export default function SettlementScreen() {
                 ]}
               >
                 {item.type === 'income' ? '+' : '-'}
-                {formatKrw(item.amount)}
+                {formatMoney(item.amount, item.currency)}
               </Text>
             </View>
             <Text style={styles.entryMeta}>
               {item.date}
+              {` · ${item.currency}`}
               {item.cardLabel ? ` · ${item.cardLabel}` : ''}
               {` · ${item.createdByName}`}
             </Text>
@@ -390,11 +436,31 @@ export default function SettlementScreen() {
               </TouchableOpacity>
             </View>
 
+            <Text style={styles.label}>통화</Text>
+            <View style={styles.typeRow}>
+              {SETTLEMENT_CURRENCIES.map((option) => (
+                <TouchableOpacity
+                  key={option.code}
+                  style={[styles.typeChip, currency === option.code && styles.typeChipActive]}
+                  onPress={() => setCurrency(option.code)}
+                >
+                  <Text
+                    style={[
+                      styles.typeChipText,
+                      currency === option.code && styles.typeChipTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <Text style={styles.label}>금액</Text>
             <TextInput
               style={styles.input}
-              placeholder="0"
-              keyboardType="number-pad"
+              placeholder={currency === 'USD' ? '0.00' : '0'}
+              keyboardType={currency === 'USD' ? 'decimal-pad' : 'number-pad'}
               value={amountText}
               onChangeText={setAmountText}
             />
@@ -570,6 +636,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#0F766E',
     fontWeight: '600',
+  },
+  currencySummaryBlock: {
+    gap: 6,
+    paddingTop: 4,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#99F6E4',
+  },
+  currencySummaryTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F766E',
   },
   summaryRow: {
     flexDirection: 'row',
