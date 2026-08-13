@@ -7,8 +7,8 @@ import { theme } from '../constants/theme';
 
 export type MainTabParamList = {
   Schedule: undefined;
-  Meal: undefined;
   Word: undefined;
+  Praise: undefined;
   Mongolian: undefined;
   Album: undefined;
 };
@@ -45,14 +45,14 @@ export default function MainTabNavigator({ onLogout, onGoHome }: MainTabNavigato
         options={{ title: '일정 📅' }}
       />
       <Tab.Screen
-        name="Meal"
-        getComponent={() => require('../screens/MealScreen').default}
-        options={{ title: '식사 메뉴 🍽️' }}
-      />
-      <Tab.Screen
         name="Word"
         getComponent={() => require('../screens/WordScreen').default}
-        options={{ title: '말씀 · 찬양 ✨' }}
+        options={{ title: '말씀 ✨' }}
+      />
+      <Tab.Screen
+        name="Praise"
+        getComponent={() => require('../screens/PraiseScreen').default}
+        options={{ title: '찬양 🎵' }}
       />
       <Tab.Screen
         name="Mongolian"

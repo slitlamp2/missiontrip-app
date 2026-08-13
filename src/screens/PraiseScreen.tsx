@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -14,55 +14,26 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import StackScreenHeader from '../components/StackScreenHeader';
+import { PRAISE_BOOK_META } from '../data/praiseBookMeta';
+import { PRAISE_BOOK_PAGES } from '../data/praiseBookPages';
 import PinchZoomView from '../components/PinchZoomView';
 import ZoomControls from '../components/ZoomControls';
-import { WORSHIP_PAGE_META } from '../data/worshipPageMeta';
-import { WORSHIP_PAGES } from '../data/worshipPages';
 
-const WORSHIP_PAGE_LIST = WORSHIP_PAGES as unknown as ImageSourcePropType[];
-
-export default function MongolianWorshipScreen() {
-  const navigation = useNavigation();
+export default function PraiseScreen() {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const estimatedPagerHeight = useMemo(
-    () => Math.max(Math.floor(screenHeight - 240), 320),
-    [screenHeight],
-  );
-  const [viewportHeight, setViewportHeight] = useState(estimatedPagerHeight);
+  const [viewportHeight, setViewportHeight] = useState(0);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [pageScale, setPageScale] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalScale, setModalScale] = useState(1);
 
-  useEffect(() => {
-    setViewportHeight(estimatedPagerHeight);
-  }, [estimatedPagerHeight]);
-
-  useEffect(() => {
-    const targets = [
-      WORSHIP_PAGE_LIST[0],
-      WORSHIP_PAGE_LIST[1],
-      WORSHIP_PAGE_LIST[currentPageIndex],
-      WORSHIP_PAGE_LIST[currentPageIndex + 1],
-    ].filter(Boolean);
-
-    targets.forEach((source) => {
-      const resolved = Image.resolveAssetSource(source);
-      if (resolved?.uri) {
-        void Image.prefetch(resolved.uri);
-      }
-    });
-  }, [currentPageIndex]);
-
   const onPagerLayout = useCallback((event: LayoutChangeEvent) => {
     const nextHeight = Math.floor(event.nativeEvent.layout.height);
-    if (nextHeight > 0 && Math.abs(nextHeight - viewportHeight) > 2) {
+    if (nextHeight > 0) {
       setViewportHeight(nextHeight);
     }
-  }, [viewportHeight]);
+  }, []);
 
   const onPageScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -70,7 +41,7 @@ export default function MongolianWorshipScreen() {
         return;
       }
       const nextIndex = Math.round(event.nativeEvent.contentOffset.y / viewportHeight);
-      const clamped = Math.max(0, Math.min(WORSHIP_PAGE_LIST.length - 1, nextIndex));
+      const clamped = Math.max(0, Math.min(PRAISE_BOOK_PAGES.length - 1, nextIndex));
       setCurrentPageIndex(clamped);
     },
     [viewportHeight],
@@ -80,9 +51,8 @@ export default function MongolianWorshipScreen() {
     setPageScale(1);
   }, [currentPageIndex]);
 
-  const sheetTotal = WORSHIP_PAGE_LIST.length - 1;
-  const currentMeta = WORSHIP_PAGE_META[currentPageIndex];
-  const currentPage = WORSHIP_PAGE_LIST[currentPageIndex];
+  const currentMeta = PRAISE_BOOK_META[currentPageIndex];
+  const currentPage = PRAISE_BOOK_PAGES[currentPageIndex];
 
   const openModal = () => {
     setModalScale(pageScale);
@@ -118,7 +88,6 @@ export default function MongolianWorshipScreen() {
               source={item}
               style={{ width: screenWidth, height: viewportHeight }}
               resizeMode="contain"
-              fadeDuration={0}
             />
             {index === currentPageIndex ? (
               <TouchableOpacity style={styles.expandButton} onPress={openModal} activeOpacity={0.8}>
@@ -127,21 +96,28 @@ export default function MongolianWorshipScreen() {
             ) : null}
           </View>
         </PinchZoomView>
-        {index > 0 ? (
-          <View style={styles.pageBadge}>
-            <Text style={styles.pageBadgeText}>
-              {index} / {sheetTotal}
-            </Text>
-          </View>
-        ) : null}
+        <View style={styles.pageBadge}>
+          <Text style={styles.pageBadgeText}>
+            {index + 1} / {PRAISE_BOOK_PAGES.length}
+          </Text>
+        </View>
       </View>
     ),
-    [currentPageIndex, pageScale, screenWidth, sheetTotal, viewportHeight],
+    [currentPageIndex, pageScale, screenWidth, viewportHeight],
   );
 
   return (
     <View style={styles.container}>
-      <StackScreenHeader title="몽골어찬양 🎵" onBack={() => navigation.goBack()} />
+      <View style={styles.header}>
+        <Text style={styles.title} numberOfLines={2}>
+          {currentMeta?.title ?? `찬양 ${currentPageIndex + 1}`}
+        </Text>
+        <Text style={styles.artist} numberOfLines={1}>
+          {currentMeta?.artist
+            ? `${currentMeta.artist} · ${currentPageIndex + 1} / ${PRAISE_BOOK_PAGES.length}`
+            : `${currentPageIndex + 1} / ${PRAISE_BOOK_PAGES.length}`}
+        </Text>
+      </View>
 
       <View style={styles.zoomToolbar}>
         <ZoomControls
@@ -154,32 +130,26 @@ export default function MongolianWorshipScreen() {
       </View>
 
       <View style={styles.pagerHost} onLayout={onPagerLayout}>
-        <FlatList
-          data={WORSHIP_PAGE_LIST}
-          keyExtractor={(_, index) => `worship-page-${index}`}
-          renderItem={renderItem}
-          pagingEnabled
-          decelerationRate="fast"
-          showsVerticalScrollIndicator={false}
-          style={styles.pager}
-          scrollEnabled={pageScale <= 1}
-          onMomentumScrollEnd={onPageScrollEnd}
-          getItemLayout={getItemLayout}
-          initialNumToRender={2}
-          maxToRenderPerBatch={2}
-          windowSize={3}
-          removeClippedSubviews
-          extraData={{ currentPageIndex, pageScale, viewportHeight }}
-        />
+        {viewportHeight > 0 ? (
+          <FlatList
+            data={PRAISE_BOOK_PAGES}
+            keyExtractor={(_, index) => `praise-page-${index + 1}`}
+            renderItem={renderItem}
+            pagingEnabled
+            decelerationRate="fast"
+            showsVerticalScrollIndicator={false}
+            style={styles.pager}
+            scrollEnabled={pageScale <= 1}
+            onMomentumScrollEnd={onPageScrollEnd}
+            getItemLayout={getItemLayout}
+            initialNumToRender={1}
+            maxToRenderPerBatch={2}
+            windowSize={3}
+            removeClippedSubviews
+            extraData={{ currentPageIndex, pageScale, viewportHeight }}
+          />
+        ) : null}
       </View>
-
-      {currentMeta?.title ? (
-        <View style={styles.titleBar}>
-          <Text style={styles.titleText} numberOfLines={1}>
-            {currentMeta.title}
-          </Text>
-        </View>
-      ) : null}
 
       <Modal visible={modalVisible} animationType="fade" transparent onRequestClose={closeModal}>
         <GestureHandlerRootView style={styles.modalRoot}>
@@ -212,7 +182,6 @@ export default function MongolianWorshipScreen() {
                     height: screenHeight * 0.72,
                   }}
                   resizeMode="contain"
-                  fadeDuration={0}
                 />
               </PinchZoomView>
             </View>
@@ -226,13 +195,28 @@ export default function MongolianWorshipScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
+  },
+  header: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    paddingHorizontal: 4,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  artist: {
+    marginTop: 4,
+    fontSize: 13,
+    color: '#64748B',
   },
   zoomToolbar: {
     marginHorizontal: 16,
-    marginTop: 8,
+    marginTop: 10,
     marginBottom: 4,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 8,
@@ -287,19 +271,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.2,
-  },
-  titleBar: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-  },
-  titleText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#334155',
   },
   modalRoot: {
     flex: 1,

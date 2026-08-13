@@ -121,10 +121,10 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.08 }],
   },
   label: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     color: theme.colors.textMuted,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
   indicator: {
     width: 4,

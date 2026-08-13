@@ -45,7 +45,7 @@ const MENU_ITEMS = [
     route: 'MainTabs' as const,
     emoji: '📅',
     title: '전체일정',
-    subtitle: '일정 · 식사 · 말씀 · 앨범',
+    subtitle: '일정 · 말씀 · 찬양 · 앨범',
     accent: '#10B981',
     bg: '#ECFDF5',
   },

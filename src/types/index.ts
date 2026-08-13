@@ -22,39 +22,6 @@ export interface ScheduleDay {
   items: ScheduleItem[];
 }
 
-export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
-
-export interface MealItem {
-  type: MealType;
-  time: string;
-  title: string;
-  menu: string;
-  place: string;
-  note: string;
-}
-
-export interface StoredMealItem extends MealItem {
-  id: string;
-}
-
-export interface MealDayOverride {
-  day: number;
-  meals: StoredMealItem[];
-  updatedAt: string;
-  updatedById: string;
-  updatedByName: string;
-}
-
-export interface MealDay {
-  day: number;
-  date: string;
-  label: string;
-  meals: MealItem[];
-  updatedByName?: string;
-  updatedAt?: string;
-  isCustomized?: boolean;
-}
-
 export type SectionContentKey =
   | 'missionIntro'
   | 'teamOrg';
