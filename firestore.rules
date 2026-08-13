@@ -38,6 +38,10 @@ service cloud.firestore {
       allow read, create, update, delete: if isSettlementUser();
     }
 
+    match /missions/{missionId}/settlementSettings/{docId} {
+      allow read, create, update, delete: if isSettlementUser();
+    }
+
     // --- 여행주권 ---
     match /users/{userId} {
       allow read: if signedIn();

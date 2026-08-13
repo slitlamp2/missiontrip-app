@@ -54,7 +54,7 @@ const MENU_ITEMS = [
     route: 'Settlement' as const,
     emoji: '💰',
     title: '정산',
-    subtitle: '영수증 · 카드 지출 합산',
+    subtitle: '현지 지출 · 엑셀 붙여넣기',
     accent: '#0F766E',
     bg: '#F0FDFA',
     requiresSettlement: true,

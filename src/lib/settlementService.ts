@@ -16,17 +16,25 @@ import type {
   SettlementEntry,
   SettlementEntryDoc,
   SettlementEntryType,
+  SettlementRates,
 } from '../types/settlement';
-import { SETTLEMENT_CURRENCIES } from '../types/settlement';
+import { DEFAULT_SETTLEMENT_RATES } from '../types/settlement';
+import { normalizeBudgetItem, normalizeSettlementRates } from '../utils/settlementExport';
 import { prepareAlbumImageForUpload } from '../utils/albumImagePrep';
 import { getFirebaseStorageBucket, getFirestoreDb } from './firebase';
 import { MISSION_ALBUM_ID } from './albumService';
 
 const MISSIONS = 'missions';
 const SUBCOLLECTION = 'settlementEntries';
+const SETTINGS_COLLECTION = 'settlementSettings';
+const RATES_DOC = 'rates';
 
 function entriesPath(missionId: string = MISSION_ALBUM_ID): string {
   return `${MISSIONS}/${missionId}/${SUBCOLLECTION}`;
+}
+
+function ratesDocPath(missionId: string = MISSION_ALBUM_ID): string {
+  return `${MISSIONS}/${missionId}/${SETTINGS_COLLECTION}/${RATES_DOC}`;
 }
 
 function normalizeCurrency(value: unknown): SettlementCurrency {
@@ -41,6 +49,10 @@ function docToEntry(id: string, data: SettlementEntryDoc): SettlementEntry {
     id,
     ...data,
     currency: normalizeCurrency(data.currency),
+    vendor: typeof data.vendor === 'string' ? data.vendor : '',
+    category: normalizeBudgetItem(data.category),
+    note: typeof data.note === 'string' ? data.note : '',
+    cardLabel: typeof data.cardLabel === 'string' ? data.cardLabel : '',
   };
 }
 
@@ -68,45 +80,44 @@ export function subscribeSettlementEntries(
   );
 }
 
-export interface CurrencySummary {
-  currency: SettlementCurrency;
-  income: number;
-  expense: number;
-  balance: number;
+export function subscribeSettlementRates(
+  callback: (rates: SettlementRates) => void,
+  onError?: (error: Error) => void,
+  missionId: string = MISSION_ALBUM_ID,
+): Unsubscribe {
+  const db = getFirestoreDb();
+  if (!db) {
+    callback(DEFAULT_SETTLEMENT_RATES);
+    return () => {};
+  }
+
+  return onSnapshot(
+    doc(db, ratesDocPath(missionId)),
+    (snapshot) => {
+      callback(normalizeSettlementRates(snapshot.data() as Partial<SettlementRates> | undefined));
+    },
+    (error) => onError?.(error),
+  );
 }
 
-/** 통화별로 수입·지출·잔액을 합산합니다. (환율 환산 없음) */
-export function summarizeSettlementByCurrency(entries: SettlementEntry[]): CurrencySummary[] {
-  const map = new Map<SettlementCurrency, CurrencySummary>();
-
-  for (const option of SETTLEMENT_CURRENCIES) {
-    map.set(option.code, {
-      currency: option.code,
-      income: 0,
-      expense: 0,
-      balance: 0,
-    });
+export async function saveSettlementRates(
+  rates: SettlementRates,
+  missionId: string = MISSION_ALBUM_ID,
+): Promise<void> {
+  const db = getFirestoreDb();
+  if (!db) {
+    throw new Error('Firebase 미초기화');
   }
 
-  for (const entry of entries) {
-    const currency = normalizeCurrency(entry.currency);
-    const current = map.get(currency) ?? {
-      currency,
-      income: 0,
-      expense: 0,
-      balance: 0,
-    };
-    if (entry.type === 'income') {
-      current.income += entry.amount;
-    } else {
-      current.expense += entry.amount;
-    }
-    current.balance = current.income - current.expense;
-    map.set(currency, current);
-  }
-
-  return SETTLEMENT_CURRENCIES.map((option) => map.get(option.code)!).filter(
-    (summary) => summary.income !== 0 || summary.expense !== 0,
+  const normalized = normalizeSettlementRates(rates);
+  await setDoc(
+    doc(db, ratesDocPath(missionId)),
+    {
+      usdToKrw: normalized.usdToKrw,
+      mntToKrw: normalized.mntToKrw,
+      updatedAt: Timestamp.now(),
+    },
+    { merge: true },
   );
 }
 
@@ -118,19 +129,13 @@ async function readUploadBlob(uri: string): Promise<Blob> {
   return response.blob();
 }
 
-function normalizeAmount(amount: number, currency: SettlementCurrency): number {
-  if (currency === 'USD') {
-    return Math.round(amount * 100) / 100;
-  }
-  return Math.round(amount);
-}
-
 export interface CreateSettlementInput {
   type: SettlementEntryType;
-  amount: number;
-  currency: SettlementCurrency;
+  /** 항상 원화 */
+  amountKrw: number;
   category: string;
   note: string;
+  vendor: string;
   cardLabel: string;
   date: string;
   receiptUri: string;
@@ -149,11 +154,15 @@ export async function createSettlementEntry(
     throw new Error('Firebase 미초기화');
   }
 
-  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+  if (!Number.isFinite(input.amountKrw) || input.amountKrw <= 0) {
     throw new Error('금액을 확인해 주세요.');
   }
 
-  const currency = normalizeCurrency(input.currency);
+  const note = input.note.trim();
+  if (!note) {
+    throw new Error('내용을 입력해 주세요.');
+  }
+
   const entryRef = doc(collection(db, entriesPath(missionId)));
   const prepared = await prepareAlbumImageForUpload({
     uri: input.receiptUri,
@@ -169,10 +178,11 @@ export async function createSettlementEntry(
   const now = Timestamp.now();
   const payload: SettlementEntryDoc = {
     type: input.type,
-    amount: normalizeAmount(input.amount, currency),
-    currency,
-    category: input.category.trim() || '기타',
-    note: input.note.trim(),
+    amount: Math.round(input.amountKrw),
+    currency: 'KRW',
+    category: normalizeBudgetItem(input.category),
+    note,
+    vendor: input.vendor.trim(),
     cardLabel: input.cardLabel.trim(),
     receiptUrl,
     receiptPath,
@@ -220,7 +230,6 @@ export function formatMoney(amount: number, currency: SettlementCurrency = 'KRW'
   return `${amount.toLocaleString('ko-KR')}원`;
 }
 
-/** @deprecated formatMoney 사용 */
 export function formatKrw(amount: number): string {
   return formatMoney(amount, 'KRW');
 }
