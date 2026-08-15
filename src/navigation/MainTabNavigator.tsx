@@ -62,7 +62,7 @@ export default function MainTabNavigator({ onLogout, onGoHome }: MainTabNavigato
       <Tab.Screen
         name="Album"
         getComponent={() => require('../screens/AlbumScreen').default}
-        options={{ title: '공유 앨범 📸' }}
+        options={{ title: '카톡 공유 📸' }}
       />
     </Tab.Navigator>
   );

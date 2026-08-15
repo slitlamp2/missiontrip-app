@@ -28,7 +28,7 @@ export async function ensureCameraPermission(): Promise<boolean> {
 
   alertPermissionDenied(
     '카메라 권한 필요',
-    '영수증을 촬영하려면 카메라 권한이 필요합니다. 설정에서 카메라를 허용해 주세요.',
+    '촬영하려면 카메라 권한이 필요합니다. 설정에서 카메라를 허용해 주세요.',
   );
   return false;
 }
