@@ -40,12 +40,20 @@ export async function saveSession(user: {
     roles: user.roles ?? [],
     loggedInAt: new Date().toISOString(),
   };
-  await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  try {
+    await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  } catch {
+    throw new Error('로그인 정보를 저장하지 못했습니다. 다시 시도해 주세요.');
+  }
 }
 
 /** 로그아웃 시 세션을 제거합니다. */
 export async function clearSession(): Promise<void> {
-  await AsyncStorage.removeItem(SESSION_KEY);
+  try {
+    await AsyncStorage.removeItem(SESSION_KEY);
+  } catch {
+    throw new Error('로그아웃 처리에 실패했습니다. 다시 시도해 주세요.');
+  }
 }
 
 /**

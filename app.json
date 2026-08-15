@@ -21,8 +21,7 @@
         "CFBundleDisplayName": "RiseUp",
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "정산 영수증 촬영을 위해 카메라 접근이 필요합니다.",
-        "NSPhotoLibraryUsageDescription": "공유 앨범 업로드와 정산 영수증 첨부를 위해 사진 라이브러리 접근이 필요합니다.",
-        "NSPhotoLibraryAddUsageDescription": "공유 앨범의 사진·동영상을 폰에 저장하려면 권한이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "카톡 공유와 정산 영수증 첨부를 위해 사진 라이브러리 접근이 필요합니다.",
         "LSApplicationQueriesSchemes": ["kakaotalk"]
       }
     },
@@ -51,17 +50,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "공유 앨범 업로드와 정산 영수증 첨부를 위해 사진 라이브러리 접근이 필요합니다.",
+          "photosPermission": "카톡 공유와 정산 영수증 첨부를 위해 사진 라이브러리 접근이 필요합니다.",
           "cameraPermission": "정산 영수증 촬영을 위해 카메라 접근이 필요합니다.",
           "microphonePermission": false
-        }
-      ],
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "공유 앨범의 사진·동영상을 폰에 저장·불러오기 위해 접근합니다.",
-          "savePhotosPermission": "공유 앨범의 사진·동영상을 폰에 저장하려면 권한이 필요합니다.",
-          "isAccessMediaLocationEnabled": false
         }
       ],
       "expo-font"

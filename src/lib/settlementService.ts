@@ -22,7 +22,9 @@ import { DEFAULT_SETTLEMENT_RATES } from '../types/settlement';
 import { normalizeBudgetItem, normalizeSettlementRates } from '../utils/settlementExport';
 import { prepareAlbumImageForUpload } from '../utils/albumImagePrep';
 import { getFirebaseStorageBucket, getFirestoreDb } from './firebase';
-import { MISSION_ALBUM_ID } from './albumService';
+
+/** 몽골선교 미션 ID (Firestore missions/{id} 경로) */
+const MISSION_ALBUM_ID = 'riseup-mongolia-2026';
 
 const MISSIONS = 'missions';
 const SUBCOLLECTION = 'settlementEntries';

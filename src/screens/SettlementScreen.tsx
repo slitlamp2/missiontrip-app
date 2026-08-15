@@ -31,6 +31,7 @@ import {
   subscribeSettlementRates,
 } from '../lib/settlementService';
 import { canAccessSettlement, getSession, type UserSession } from '../utils/auth';
+import { getTodayString } from '../utils/notifications';
 import {
   ensureCameraPermission,
   ensureMediaLibraryPermission,
@@ -85,7 +86,7 @@ export default function SettlementScreen() {
   const [vendor, setVendor] = useState('');
   const [cardLabel, setCardLabel] = useState('');
   const [note, setNote] = useState('');
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => getTodayString());
   const [receiptUri, setReceiptUri] = useState<string | null>(null);
   const [receiptWidth, setReceiptWidth] = useState<number | undefined>();
   const [receiptHeight, setReceiptHeight] = useState<number | undefined>();
@@ -171,7 +172,7 @@ export default function SettlementScreen() {
     setVendor('');
     setCardLabel('');
     setNote('');
-    setDate(new Date().toISOString().slice(0, 10));
+    setDate(getTodayString());
     setReceiptUri(null);
     setReceiptWidth(undefined);
     setReceiptHeight(undefined);

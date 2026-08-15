@@ -10,7 +10,13 @@ const notices = noticesData as Notice[];
 const schedule = scheduleData as ScheduleDay[];
 
 function getTodayString(): string {
-  return new Date().toISOString().slice(0, 10);
+  // toISOString()은 UTC 기준이라 한국/몽골 시간대에서 날짜가 하루 밀릴 수 있어
+  // 로컬 시간 기준으로 조립한다.
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function getNowTimeString(): string {
@@ -108,7 +114,11 @@ async function getMemberNotifications(): Promise<UserNotification[]> {
 }
 
 async function saveMemberNotifications(items: UserNotification[]): Promise<void> {
-  await AsyncStorage.setItem(MEMBER_NOTIFICATIONS_KEY, JSON.stringify(items));
+  try {
+    await AsyncStorage.setItem(MEMBER_NOTIFICATIONS_KEY, JSON.stringify(items));
+  } catch {
+    throw new Error('알림을 저장하지 못했습니다. 다시 시도해 주세요.');
+  }
 }
 
 function buildStaticNotifications(): AppNotification[] {
@@ -199,10 +209,14 @@ export async function deleteMemberNotification(notificationId: string, authorId:
 
   const readIds = await getReadNotificationIds();
   if (readIds.includes(notificationId)) {
-    await AsyncStorage.setItem(
-      READ_IDS_KEY,
-      JSON.stringify(readIds.filter((id) => id !== notificationId)),
-    );
+    try {
+      await AsyncStorage.setItem(
+        READ_IDS_KEY,
+        JSON.stringify(readIds.filter((id) => id !== notificationId)),
+      );
+    } catch {
+      // 읽음 표시 정리는 실패해도 알림 삭제 자체에는 영향 없음
+    }
   }
 }
 
@@ -218,13 +232,21 @@ export async function getReadNotificationIds(): Promise<string[]> {
 export async function markNotificationAsRead(id: string): Promise<void> {
   const readIds = await getReadNotificationIds();
   if (readIds.includes(id)) return;
-  await AsyncStorage.setItem(READ_IDS_KEY, JSON.stringify([...readIds, id]));
+  try {
+    await AsyncStorage.setItem(READ_IDS_KEY, JSON.stringify([...readIds, id]));
+  } catch {
+    // 읽음 표시 실패는 다음 열람 때 다시 시도되므로 무시
+  }
 }
 
 export async function markAllNotificationsAsRead(ids: string[]): Promise<void> {
   const readIds = await getReadNotificationIds();
   const merged = Array.from(new Set([...readIds, ...ids]));
-  await AsyncStorage.setItem(READ_IDS_KEY, JSON.stringify(merged));
+  try {
+    await AsyncStorage.setItem(READ_IDS_KEY, JSON.stringify(merged));
+  } catch {
+    // 읽음 표시 실패는 다음 열람 때 다시 시도되므로 무시
+  }
 }
 
 export async function getUnreadCount(): Promise<number> {
