@@ -8,8 +8,20 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    // --- 몽골선교 (missions/.../album/) ---
-    match /missions/{missionId}/{allPaths=**} {
+    function isSettlementUser() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+
+    // --- 몽골선교 정산 영수증 (Email/Password만) ---
+    match /missions/{missionId}/settlementReceipts/{allPaths=**} {
+      allow read, write: if isSettlementUser();
+    }
+
+    // --- 몽골선교 공유 앨범 (missions/.../album/) ---
+    // 주의: {allPaths=**} 전체 매치로 두면 Storage 규칙의 OR 평가 때문에
+    // settlementReceipts 제한이 우회되므로 album 하위로만 한정한다.
+    match /missions/{missionId}/album/{allPaths=**} {
       allow read, write: if signedIn();
     }
 

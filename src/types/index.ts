@@ -1,7 +1,11 @@
+export type UserRole = 'settlement';
+
 export interface User {
   id: string;
   name: string;
   pin: string;
+  /** 앱 메뉴 노출용 로컬 역할 (정산 등). 서버 권한과 별개. */
+  roles?: UserRole[];
 }
 
 export interface ScheduleItem {
@@ -16,39 +20,6 @@ export interface ScheduleDay {
   date: string;
   label: string;
   items: ScheduleItem[];
-}
-
-export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
-
-export interface MealItem {
-  type: MealType;
-  time: string;
-  title: string;
-  menu: string;
-  place: string;
-  note: string;
-}
-
-export interface StoredMealItem extends MealItem {
-  id: string;
-}
-
-export interface MealDayOverride {
-  day: number;
-  meals: StoredMealItem[];
-  updatedAt: string;
-  updatedById: string;
-  updatedByName: string;
-}
-
-export interface MealDay {
-  day: number;
-  date: string;
-  label: string;
-  meals: MealItem[];
-  updatedByName?: string;
-  updatedAt?: string;
-  isCustomized?: boolean;
 }
 
 export type SectionContentKey =

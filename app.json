@@ -20,12 +20,20 @@
       "infoPlist": {
         "CFBundleDisplayName": "RiseUp",
         "ITSAppUsesNonExemptEncryption": false,
-        "NSPhotoLibraryUsageDescription": "공유 앨범에 사진·동영상을 올리기 위해 사진 라이브러리 접근이 필요합니다.",
-        "NSPhotoLibraryAddUsageDescription": "공유 앨범의 사진·동영상을 폰에 저장하려면 권한이 필요합니다."
+        "NSCameraUsageDescription": "정산 영수증 촬영을 위해 카메라 접근이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "카톡 공유와 정산 영수증 첨부를 위해 사진 라이브러리 접근이 필요합니다.",
+        "LSApplicationQueriesSchemes": ["kakaotalk"]
       }
     },
     "android": {
       "package": "com.yeun.riseupmongolia",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#87CEEB",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -42,15 +50,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "공유 앨범에 사진·동영상을 올리기 위해 사진 라이브러리 접근이 필요합니다."
-        }
-      ],
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "공유 앨범의 사진·동영상을 폰에 저장·불러오기 위해 접근합니다.",
-          "savePhotosPermission": "공유 앨범의 사진·동영상을 폰에 저장하려면 권한이 필요합니다.",
-          "isAccessMediaLocationEnabled": false
+          "photosPermission": "카톡 공유와 정산 영수증 첨부를 위해 사진 라이브러리 접근이 필요합니다.",
+          "cameraPermission": "정산 영수증 촬영을 위해 카메라 접근이 필요합니다.",
+          "microphonePermission": false
         }
       ],
       "expo-font"

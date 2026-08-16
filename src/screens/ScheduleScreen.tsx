@@ -8,18 +8,14 @@ import {
   FlatList,
   useWindowDimensions,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import scheduleData from '../data/schedule.json';
 import ZoomableImage from '../components/ZoomableImage';
 import type { ScheduleDay } from '../types';
-import type { MainTabParamList } from '../navigation/MainTabNavigator';
 
 const schedule = scheduleData as ScheduleDay[];
 const scheduleOverview = require('../../assets/images/schedule-overview.png');
 
 export default function ScheduleScreen() {
-  const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
   const { width: screenWidth } = useWindowDimensions();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const isOverview = selectedIndex === 0;
@@ -60,19 +56,6 @@ export default function ScheduleScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
-
-      <TouchableOpacity
-        style={styles.mealButton}
-        onPress={() => navigation.navigate('Meal')}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.mealButtonEmoji}>🍽️</Text>
-        <View style={styles.mealButtonTextWrap}>
-          <Text style={styles.mealButtonTitle}>식사 메뉴 보기</Text>
-          <Text style={styles.mealButtonSubtitle}>아침 · 점심 · 저녁 메뉴 확인</Text>
-        </View>
-        <Text style={styles.mealButtonArrow}>›</Text>
-      </TouchableOpacity>
 
       {isOverview ? (
         <ScrollView
@@ -166,41 +149,6 @@ const styles = StyleSheet.create({
   },
   dayTabDateActive: {
     color: '#BFDBFE',
-  },
-  mealButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  mealButtonEmoji: {
-    fontSize: 24,
-    marginRight: 10,
-  },
-  mealButtonTextWrap: {
-    flex: 1,
-  },
-  mealButtonTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#065F46',
-  },
-  mealButtonSubtitle: {
-    fontSize: 12,
-    color: '#059669',
-    marginTop: 2,
-    fontWeight: '600',
-  },
-  mealButtonArrow: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#10B981',
   },
   overviewContent: {
     paddingHorizontal: 8,

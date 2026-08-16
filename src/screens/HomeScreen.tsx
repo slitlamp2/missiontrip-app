@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AppHeader from '../components/AppHeader';
 import MongoliaMapLogo from '../components/MongoliaMapLogo';
-import { getSession } from '../utils/auth';
+import { canAccessSettlement, getSession } from '../utils/auth';
 import { theme } from '../constants/theme';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 
@@ -45,9 +45,19 @@ const MENU_ITEMS = [
     route: 'MainTabs' as const,
     emoji: '📅',
     title: '전체일정',
-    subtitle: '일정 · 식사 · 말씀 · 앨범',
+    subtitle: '일정 · 말씀 · 찬양 · 카톡',
     accent: '#10B981',
     bg: '#ECFDF5',
+  },
+  {
+    id: 'settlement',
+    route: 'Settlement' as const,
+    emoji: '💰',
+    title: '정산',
+    subtitle: '현지 지출 · 엑셀 붙여넣기',
+    accent: '#0F766E',
+    bg: '#F0FDFA',
+    requiresSettlement: true,
   },
   {
     id: 'team',
@@ -72,10 +82,12 @@ const MENU_ITEMS = [
 export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const navigation = useNavigation<HomeNav>();
   const [userName, setUserName] = useState('팀원');
+  const [showSettlement, setShowSettlement] = useState(false);
 
   useEffect(() => {
     getSession().then((session) => {
       if (session?.name) setUserName(session.name);
+      setShowSettlement(canAccessSettlement(session));
     });
   }, []);
 
@@ -86,6 +98,10 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     }
     navigation.navigate(route);
   };
+
+  const visibleMenus = MENU_ITEMS.filter(
+    (item) => !('requiresSettlement' in item && item.requiresSettlement) || showSettlement,
+  );
 
   return (
     <View style={styles.container}>
@@ -99,7 +115,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         </View>
 
         <View style={styles.menuGrid}>
-          {MENU_ITEMS.map((item) => (
+          {visibleMenus.map((item) => (
             <TouchableOpacity
               key={item.id}
               style={[styles.menuCard, { backgroundColor: item.bg }]}

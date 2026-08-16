@@ -1,17 +1,18 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  FlatList,
   Image,
-  LayoutChangeEvent,
-  Linking,
   Modal,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
+  type ImageSourcePropType,
+  type LayoutChangeEvent,
+  type ListRenderItemInfo,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -21,21 +22,47 @@ import ZoomControls from '../components/ZoomControls';
 import { WORSHIP_PAGE_META } from '../data/worshipPageMeta';
 import { WORSHIP_PAGES } from '../data/worshipPages';
 
+const WORSHIP_PAGE_LIST = WORSHIP_PAGES as unknown as ImageSourcePropType[];
+
 export default function MongolianWorshipScreen() {
   const navigation = useNavigation();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const [viewportHeight, setViewportHeight] = useState(0);
+  const estimatedPagerHeight = useMemo(
+    () => Math.max(Math.floor(screenHeight - 240), 320),
+    [screenHeight],
+  );
+  const [viewportHeight, setViewportHeight] = useState(estimatedPagerHeight);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [pageScale, setPageScale] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalScale, setModalScale] = useState(1);
 
+  useEffect(() => {
+    setViewportHeight(estimatedPagerHeight);
+  }, [estimatedPagerHeight]);
+
+  useEffect(() => {
+    const targets = [
+      WORSHIP_PAGE_LIST[0],
+      WORSHIP_PAGE_LIST[1],
+      WORSHIP_PAGE_LIST[currentPageIndex],
+      WORSHIP_PAGE_LIST[currentPageIndex + 1],
+    ].filter(Boolean);
+
+    targets.forEach((source) => {
+      const resolved = Image.resolveAssetSource(source);
+      if (resolved?.uri) {
+        void Image.prefetch(resolved.uri);
+      }
+    });
+  }, [currentPageIndex]);
+
   const onPagerLayout = useCallback((event: LayoutChangeEvent) => {
     const nextHeight = Math.floor(event.nativeEvent.layout.height);
-    if (nextHeight > 0) {
+    if (nextHeight > 0 && Math.abs(nextHeight - viewportHeight) > 2) {
       setViewportHeight(nextHeight);
     }
-  }, []);
+  }, [viewportHeight]);
 
   const onPageScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -43,7 +70,8 @@ export default function MongolianWorshipScreen() {
         return;
       }
       const nextIndex = Math.round(event.nativeEvent.contentOffset.y / viewportHeight);
-      setCurrentPageIndex(nextIndex);
+      const clamped = Math.max(0, Math.min(WORSHIP_PAGE_LIST.length - 1, nextIndex));
+      setCurrentPageIndex(clamped);
     },
     [viewportHeight],
   );
@@ -52,9 +80,9 @@ export default function MongolianWorshipScreen() {
     setPageScale(1);
   }, [currentPageIndex]);
 
-  const sheetTotal = WORSHIP_PAGES.length - 1;
+  const sheetTotal = WORSHIP_PAGE_LIST.length - 1;
   const currentMeta = WORSHIP_PAGE_META[currentPageIndex];
-  const currentPage = WORSHIP_PAGES[currentPageIndex];
+  const currentPage = WORSHIP_PAGE_LIST[currentPageIndex];
 
   const openModal = () => {
     setModalScale(pageScale);
@@ -66,6 +94,51 @@ export default function MongolianWorshipScreen() {
     setModalVisible(false);
   };
 
+  const getItemLayout = useCallback(
+    (_: ArrayLike<ImageSourcePropType> | null | undefined, index: number) => ({
+      length: viewportHeight,
+      offset: viewportHeight * index,
+      index,
+    }),
+    [viewportHeight],
+  );
+
+  const renderItem = useCallback(
+    ({ item, index }: ListRenderItemInfo<ImageSourcePropType>) => (
+      <View style={[styles.pageSlot, { width: screenWidth, height: viewportHeight }]}>
+        <PinchZoomView
+          scale={index === currentPageIndex ? pageScale : 1}
+          onScaleChange={setPageScale}
+          minScale={1}
+          maxScale={4}
+          style={styles.pageZoomHost}
+        >
+          <View style={styles.pageContent}>
+            <Image
+              source={item}
+              style={{ width: screenWidth, height: viewportHeight }}
+              resizeMode="contain"
+              fadeDuration={0}
+            />
+            {index === currentPageIndex ? (
+              <TouchableOpacity style={styles.expandButton} onPress={openModal} activeOpacity={0.8}>
+                <Text style={styles.expandButtonText}>전체화면</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </PinchZoomView>
+        {index > 0 ? (
+          <View style={styles.pageBadge}>
+            <Text style={styles.pageBadgeText}>
+              {index} / {sheetTotal}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    ),
+    [currentPageIndex, pageScale, screenWidth, sheetTotal, viewportHeight],
+  );
+
   return (
     <View style={styles.container}>
       <StackScreenHeader title="몽골어찬양 🎵" onBack={() => navigation.goBack()} />
@@ -76,70 +149,35 @@ export default function MongolianWorshipScreen() {
           onScaleChange={setPageScale}
           minScale={1}
           maxScale={4}
-          hint="손가락으로 벌리거나 +/− 버튼으로 악보 확대"
+          hint="위아래로 넘겨 악보 이동 · 손가락으로 벌려 확대"
         />
       </View>
 
       <View style={styles.pagerHost} onLayout={onPagerLayout}>
-        {viewportHeight > 0 ? (
-          <ScrollView
-            pagingEnabled
-            decelerationRate="fast"
-            showsVerticalScrollIndicator={false}
-            style={styles.pager}
-            scrollEnabled={pageScale <= 1}
-            onMomentumScrollEnd={onPageScrollEnd}
-          >
-            {WORSHIP_PAGES.map((page, index) => (
-              <View
-                key={index}
-                style={[styles.pageSlot, { width: screenWidth, height: viewportHeight }]}
-              >
-                <PinchZoomView
-                  scale={pageScale}
-                  onScaleChange={setPageScale}
-                  minScale={1}
-                  maxScale={4}
-                  style={styles.pageZoomHost}
-                >
-                  <View style={styles.pageContent}>
-                    <Image
-                      source={page}
-                      style={{ width: screenWidth, height: viewportHeight }}
-                      resizeMode="contain"
-                    />
-                    <TouchableOpacity style={styles.expandButton} onPress={openModal} activeOpacity={0.8}>
-                      <Text style={styles.expandButtonText}>전체화면</Text>
-                    </TouchableOpacity>
-                  </View>
-                </PinchZoomView>
-                {index > 0 ? (
-                  <View style={styles.pageBadge}>
-                    <Text style={styles.pageBadgeText}>
-                      {index} / {sheetTotal}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            ))}
-          </ScrollView>
-        ) : null}
+        <FlatList
+          data={WORSHIP_PAGE_LIST}
+          keyExtractor={(_, index) => `worship-page-${index}`}
+          renderItem={renderItem}
+          pagingEnabled
+          decelerationRate="fast"
+          showsVerticalScrollIndicator={false}
+          style={styles.pager}
+          scrollEnabled={pageScale <= 1}
+          onMomentumScrollEnd={onPageScrollEnd}
+          getItemLayout={getItemLayout}
+          initialNumToRender={2}
+          maxToRenderPerBatch={2}
+          windowSize={3}
+          removeClippedSubviews
+          extraData={{ currentPageIndex, pageScale, viewportHeight }}
+        />
       </View>
 
-      {currentMeta?.youtubeUrl ? (
-        <View style={styles.youtubeBar}>
-          {currentMeta.title ? (
-            <Text style={styles.youtubeTitle} numberOfLines={1}>
-              {currentMeta.title}
-            </Text>
-          ) : null}
-          <TouchableOpacity
-            style={styles.youtubeButton}
-            onPress={() => void Linking.openURL(currentMeta.youtubeUrl!)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.youtubeButtonText}>▶ YouTube에서 듣기</Text>
-          </TouchableOpacity>
+      {currentMeta?.title ? (
+        <View style={styles.titleBar}>
+          <Text style={styles.titleText} numberOfLines={1}>
+            {currentMeta.title}
+          </Text>
         </View>
       ) : null}
 
@@ -174,6 +212,7 @@ export default function MongolianWorshipScreen() {
                     height: screenHeight * 0.72,
                   }}
                   resizeMode="contain"
+                  fadeDuration={0}
                 />
               </PinchZoomView>
             </View>
@@ -249,31 +288,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.2,
   },
-  youtubeBar: {
+  titleBar: {
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
     backgroundColor: '#FFFFFF',
-    gap: 8,
   },
-  youtubeTitle: {
+  titleText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#334155',
-  },
-  youtubeButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  youtubeButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
   },
   modalRoot: {
     flex: 1,

@@ -22,7 +22,11 @@ async function getOverrides(): Promise<StoredSectionContent[]> {
 }
 
 async function saveOverrides(items: StoredSectionContent[]): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  try {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    throw new Error('내용을 저장하지 못했습니다. 다시 시도해 주세요.');
+  }
 }
 
 export async function getSectionContent(key: SectionContentKey): Promise<SectionContent> {

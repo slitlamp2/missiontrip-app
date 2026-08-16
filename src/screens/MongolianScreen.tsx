@@ -23,7 +23,7 @@ export default function MongolianScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.intro}>
-        가이드북의 몽골어 회화입니다. 한국어 발음을 소리 내어 연습해 두면 현지에서 유용합니다.
+        인사말과 일상 표현 위주의 몽골어입니다. 한국어 발음을 소리 내어 연습해 두면 현지에서 바로 쓸 수 있습니다.
       </Text>
 
       {contents.mongolian.map((section) => {
