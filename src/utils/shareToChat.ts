@@ -1,15 +1,22 @@
 import { Alert, Linking, Platform, Share } from 'react-native';
 import * as Sharing from 'expo-sharing';
 
-const KAKAOTALK_URL = 'kakaotalk://';
+/** iOS는 스킴만으로 열리고, Android 카톡은 host가 있는 launch URL을 등록합니다. */
+const KAKAOTALK_URLS =
+  Platform.OS === 'android' ? ['kakaotalk://launch', 'kakaotalk://'] : ['kakaotalk://'];
 
 /** 카카오톡 앱을 엽니다. 특정 단톡방으로 바로 들어가지는 않습니다. */
 export async function openKakaoTalk(): Promise<void> {
-  try {
-    await Linking.openURL(KAKAOTALK_URL);
-  } catch {
-    Alert.alert('카카오톡을 열 수 없습니다', '카카오톡이 설치되어 있는지 확인해 주세요.');
+  for (const url of KAKAOTALK_URLS) {
+    try {
+      await Linking.openURL(url);
+      return;
+    } catch {
+      // 다음 URL을 시도합니다.
+    }
   }
+
+  Alert.alert('카카오톡을 열 수 없습니다', '카카오톡이 설치되어 있는지 확인해 주세요.');
 }
 
 export interface ShareableFile {

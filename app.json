@@ -55,7 +55,8 @@
           "microphonePermission": false
         }
       ],
-      "expo-font"
+      "expo-font",
+      "./plugins/withKakaoTalkQueries.js"
     ],
     "extra": {
       "eas": {
