@@ -4,7 +4,9 @@ import {
   Alert,
   FlatList,
   Image,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   Share,
   StyleSheet,
@@ -13,12 +15,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { TextInput as GestureTextInput } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import StackScreenHeader from '../components/StackScreenHeader';
 import {
+  mapSettlementAuthError,
   signInSettlementWithEmail,
   signOutSettlementAuth,
+  signUpSettlementWithEmail,
   subscribeSettlementAuth,
 } from '../lib/settlementAuth';
 import {
@@ -64,6 +69,7 @@ export default function SettlementScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
 
@@ -145,8 +151,31 @@ export default function SettlementScreen() {
     try {
       await signInSettlementWithEmail(email, password);
     } catch (error) {
-      const message = error instanceof Error ? error.message : '로그인에 실패했습니다.';
-      setLoginError(message.includes('auth/') ? '이메일 또는 비밀번호를 확인해 주세요.' : message);
+      setLoginError(mapSettlementAuthError(error, '이메일 또는 비밀번호를 확인해 주세요.'));
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleSettlementSignUp = async () => {
+    setLoginError('');
+    if (!email.trim() || !password) {
+      setLoginError('이메일과 비밀번호를 입력해 주세요.');
+      return;
+    }
+    if (password.length < 6) {
+      setLoginError('비밀번호는 6자 이상이어야 합니다.');
+      return;
+    }
+    if (password !== passwordConfirm) {
+      setLoginError('비밀번호 확인이 일치하지 않습니다.');
+      return;
+    }
+    setLoginLoading(true);
+    try {
+      await signUpSettlementWithEmail(email, password);
+    } catch (error) {
+      setLoginError(mapSettlementAuthError(error, '회원가입에 실패했습니다.'));
     } finally {
       setLoginLoading(false);
     }
@@ -360,39 +389,98 @@ export default function SettlementScreen() {
     return (
       <View style={styles.container}>
         <StackScreenHeader title="정산 💰" onBack={() => navigation.goBack()} />
-        <ScrollView contentContainerStyle={styles.loginContent} keyboardShouldPersistTaps="handled">
-          <Text style={styles.loginTitle}>정산 계정 로그인</Text>
-          <Text style={styles.loginHint}>
-            Firebase Email/Password 계정으로 로그인하면 여러 기기에서 영수증·금액이 함께 합산됩니다.
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="이메일"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="비밀번호"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => void handleSettlementLogin()}
-            disabled={loginLoading}
+        <KeyboardAvoidingView
+          style={styles.loginFlex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView
+            contentContainerStyle={styles.loginContent}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="none"
           >
-            {loginLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.primaryButtonText}>정산 로그인</Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
+            <Text style={styles.loginTitle}>정산 계정 로그인</Text>
+            <Text style={styles.loginHint}>
+              이메일 계정으로 로그인하면 여러 기기에서 영수증·금액이 함께 합산됩니다. 계정이 없으면
+              아래에서 회원가입할 수 있습니다.
+            </Text>
+            <GestureTextInput
+              style={styles.input}
+              placeholder="이메일"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              textContentType="none"
+              keyboardType="email-address"
+              importantForAutofill="no"
+              underlineColorAndroid="transparent"
+              value={email}
+              onChangeText={(text) => {
+                setLoginError('');
+                setEmail(text);
+              }}
+              editable={!loginLoading}
+              returnKeyType="next"
+            />
+            <GestureTextInput
+              style={styles.input}
+              placeholder="비밀번호 (6자 이상)"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              textContentType="none"
+              secureTextEntry
+              importantForAutofill="no"
+              underlineColorAndroid="transparent"
+              value={password}
+              onChangeText={(text) => {
+                setLoginError('');
+                setPassword(text);
+              }}
+              editable={!loginLoading}
+              returnKeyType="next"
+            />
+            <GestureTextInput
+              style={styles.input}
+              placeholder="비밀번호 확인 (회원가입 시)"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              textContentType="none"
+              secureTextEntry
+              importantForAutofill="no"
+              underlineColorAndroid="transparent"
+              value={passwordConfirm}
+              onChangeText={(text) => {
+                setLoginError('');
+                setPasswordConfirm(text);
+              }}
+              editable={!loginLoading}
+              returnKeyType="done"
+            />
+            {loginError ? <Text style={styles.loginErrorText}>{loginError}</Text> : null}
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => void handleSettlementLogin()}
+              disabled={loginLoading}
+            >
+              {loginLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.primaryButtonText}>정산 로그인</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => void handleSettlementSignUp()}
+              disabled={loginLoading}
+            >
+              <Text style={styles.secondaryButtonText}>회원가입</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     );
   }
@@ -764,9 +852,18 @@ const styles = StyleSheet.create({
     color: '#64748B',
     textAlign: 'center',
   },
+  loginFlex: {
+    flex: 1,
+  },
   loginContent: {
     padding: 20,
     gap: 12,
+    flexGrow: 1,
+  },
+  loginErrorText: {
+    color: '#DC2626',
+    fontSize: 13,
+    fontWeight: '600',
   },
   loginTitle: {
     fontSize: 22,
