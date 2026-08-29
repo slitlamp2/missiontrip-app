@@ -116,6 +116,11 @@ async function getLogMap(): Promise<LogMap> {
   return (await getItem<LogMap>(STORAGE_KEYS.routineLogs)) ?? {};
 }
 
+/** 전체 일별 완료 기록. 캘린더처럼 여러 날짜를 한 번에 조회할 때 사용한다. */
+export async function getLogs(): Promise<Record<string, string[]>> {
+  return getLogMap();
+}
+
 export async function getLog(date: string): Promise<RoutineLog> {
   const logs = await getLogMap();
   return { date, completedTaskIds: logs[date] ?? [] };

@@ -18,19 +18,22 @@ src/
   types/         # UserProfile, PhotoEntry, RoutineTask, Product 등 전역 타입
   theme.ts       # 색상·간격 토큰
   context/       # ProfileContext (온보딩 완료 여부 = 로그인 상태)
-  navigation/    # RootNavigator (온보딩 → 메인 탭 5개)
+  navigation/    # RootNavigator (온보딩 → 메인 탭 6개)
   screens/
     OnboardingScreen  # 연령대(20/30/40/50+) + 관심사(여드름/탈모) 선택
     HomeScreen        # 오늘 루틴 진행률 + 관심사별 최근 기록 요약
     TimelineScreen    # 사진 촬영/선택 → 로컬 저장 → 타임라인, AI 분석(목업)
     RoutineScreen     # 아침/저녁 루틴 체크리스트, 일별 기록
+    CalendarScreen    # 월간 캘린더 — 날짜별 루틴 완료·사진 확인/체크
     RecommendScreen   # 연령대·관심사별 가이드 + 제품/성분 추천
     SettingsScreen    # 프로필 수정, 초기화
   core/
     storage.ts   # AsyncStorage 공용 헬퍼 (모두 try-catch)
     profile.ts   # 프로필 저장/조회/초기화
     photoLog.ts  # 사진을 문서 폴더로 복사 후 메타데이터 저장
-    routine.ts   # 루틴 시드/토글/완료율 계산
+    routine.ts   # 루틴 시드(연령대별)/추가/삭제/순서변경/요일 필터/완료율 계산
+    calendar.ts  # 월간 그리드·날짜 키 헬퍼
+    reminders.ts # 아침·저녁 루틴 알림 예약 (expo-notifications)
     analysis.ts  # AnalysisService 인터페이스 + MockAnalysisService
     recommend.ts # 프로필 기반 제품·가이드 필터링
   modules/
@@ -49,6 +52,17 @@ src/
 - React Navigation v7 (Bottom Tabs)
 - AsyncStorage(프로필·루틴·사진 메타데이터) + expo-file-system(사진 파일)
 - expo-image-picker (촬영/앨범 선택)
+- expo-notifications (아침/저녁 루틴 리마인더 — 웹 미지원, 앱 전용)
+
+### 루틴 동작 방식
+
+- 온보딩/설정에서 고른 **관심사 + 연령대**에 맞는 기본 루틴이 자동 시드됩니다
+  (모듈 템플릿의 `ageGroups`, `days`로 연령대별·요일별 항목을 정의).
+- 사용자가 직접 항목을 **추가·삭제·순서 변경**할 수 있고, 요일을 지정하면
+  해당 요일에만 루틴 탭에 표시됩니다 (예: 주 1회 각질 케어).
+- 완료율은 요일별 예정 개수를 분모로 계산되어 AI 분석 점수 보정에 쓰입니다.
+- **달력 탭**에서 월별로 완료(초록)/일부(노랑) 점과 사진 기록을 확인하고,
+  날짜를 누르면 그날 루틴을 체크하거나 사진을 볼 수 있습니다.
 
 백엔드 없이 **완전 로컬로 동작**합니다. AI 분석은 `AnalysisService` 인터페이스 뒤에
 목업 구현(`MockAnalysisService`)이 붙어 있어, 실제 비전 API 연동 시 구현체만 교체하면 됩니다.
@@ -68,5 +82,4 @@ npx expo start --port 8087
 1. 실제 AI 분석: Firebase Functions 또는 외부 비전 API 연동 (`analysis.ts` 구현체 교체)
 2. 클라우드 백업/동기화 (선택)
 3. 30~50대용 추가 모듈: 주름, 모공, 두피 노화 등 (`modules/`에 추가 후 registry 등록)
-4. 알림(루틴 리마인더): expo-notifications
-5. 사진 비교 뷰 (before/after 슬라이더)
+4. 사진 비교 뷰 (before/after 슬라이더)

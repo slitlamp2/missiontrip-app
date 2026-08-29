@@ -8,6 +8,7 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
 import TimelineScreen from '../screens/TimelineScreen';
 import RoutineScreen from '../screens/RoutineScreen';
+import CalendarScreen from '../screens/CalendarScreen';
 import RecommendScreen from '../screens/RecommendScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { colors } from '../theme';
@@ -16,6 +17,7 @@ export type MainTabParamList = {
   Home: undefined;
   Timeline: undefined;
   Routine: undefined;
+  Calendar: undefined;
   Recommend: undefined;
   Settings: undefined;
 };
@@ -26,6 +28,7 @@ const TAB_ICONS: Record<keyof MainTabParamList, string> = {
   Home: '🏠',
   Timeline: '📷',
   Routine: '✅',
+  Calendar: '📅',
   Recommend: '💡',
   Settings: '⚙️',
 };
@@ -37,6 +40,7 @@ function MainTabs() {
         headerTitleStyle: { fontWeight: '700' },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
+        tabBarLabelStyle: { fontSize: 10 },
         tabBarIcon: ({ focused }) => (
           <Text style={{ fontSize: 18, opacity: focused ? 1 : 0.5 }}>
             {TAB_ICONS[route.name as keyof MainTabParamList]}
@@ -54,6 +58,11 @@ function MainTabs() {
         name="Routine"
         component={RoutineScreen}
         options={{ title: '루틴' }}
+      />
+      <Tab.Screen
+        name="Calendar"
+        component={CalendarScreen}
+        options={{ title: '달력' }}
       />
       <Tab.Screen
         name="Recommend"

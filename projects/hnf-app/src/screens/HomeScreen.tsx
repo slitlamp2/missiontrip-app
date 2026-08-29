@@ -1,16 +1,19 @@
 import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import { useRequiredProfile } from '../context/ProfileContext';
 import { getPhotos } from '../core/photoLog';
 import { getLog, getTasksForToday, todayKey } from '../core/routine';
 import { getModule } from '../modules/registry';
+import type { MainTabParamList } from '../navigation/RootNavigator';
 import { AGE_GROUP_LABELS, type PhotoEntry } from '../types';
 import { colors, spacing } from '../theme';
 
 export default function HomeScreen() {
   const { profile } = useRequiredProfile();
+  const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
   const [taskCount, setTaskCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [latestPhotos, setLatestPhotos] = useState<PhotoEntry[]>([]);
@@ -67,6 +70,9 @@ export default function HomeScreen() {
             ? '오늘 루틴을 모두 완료했어요! 👏'
             : '루틴 탭에서 오늘의 케어를 체크해 보세요.'}
         </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Calendar')}>
+          <Text style={styles.calendarLink}>📅 캘린더에서 보기</Text>
+        </TouchableOpacity>
       </View>
 
       {profile.concerns.map((concern) => {
@@ -132,6 +138,11 @@ const styles = StyleSheet.create({
   cardHint: {
     fontSize: 13,
     color: colors.textMuted,
+  },
+  calendarLink: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary,
   },
   progressText: {
     fontSize: 22,
