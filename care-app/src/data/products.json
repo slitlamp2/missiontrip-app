@@ -1,0 +1,110 @@
+[
+  {
+    "id": "acne-cleanser-low-ph",
+    "concern": "acne",
+    "ageGroups": ["20s", "30s"],
+    "name": "약산성 젤 클렌저",
+    "category": "세안",
+    "keyIngredients": ["살리실산(BHA)", "판테놀"],
+    "description": "피지가 많은 20~30대 트러블 피부에 맞는 pH 5.5 약산성 세안제. 아침·저녁 사용."
+  },
+  {
+    "id": "acne-spot-patch",
+    "concern": "acne",
+    "ageGroups": ["20s", "30s"],
+    "name": "하이드로콜로이드 스팟 패치",
+    "category": "스팟 케어",
+    "keyIngredients": ["하이드로콜로이드"],
+    "description": "화농성 트러블 부위를 보호하고 진정시키는 패치. 손으로 만지는 습관 차단에도 효과적."
+  },
+  {
+    "id": "acne-niacinamide-serum",
+    "concern": "acne",
+    "ageGroups": ["20s", "30s", "40s"],
+    "name": "나이아신아마이드 세럼",
+    "category": "세럼",
+    "keyIngredients": ["나이아신아마이드 5%", "아연 PCA"],
+    "description": "피지 조절과 붉은 자국 완화에 도움. 저녁 루틴에 추가하기 좋은 기본 세럼."
+  },
+  {
+    "id": "acne-azelaic-cream",
+    "concern": "acne",
+    "ageGroups": ["30s", "40s", "50s+"],
+    "name": "아젤라산 크림",
+    "category": "기능성 크림",
+    "keyIngredients": ["아젤라산 10%"],
+    "description": "성인 여드름과 홍조가 함께 있는 피부에 적합. 자극이 적어 30대 이후에도 무난."
+  },
+  {
+    "id": "acne-retinal-serum",
+    "concern": "acne",
+    "ageGroups": ["30s", "40s", "50s+"],
+    "name": "레티날 나이트 세럼",
+    "category": "안티에이징",
+    "keyIngredients": ["레티날 0.05%", "세라마이드"],
+    "description": "트러블 자국과 주름을 동시에 관리하는 저농도 레티노이드. 주 2~3회부터 시작."
+  },
+  {
+    "id": "acne-sunscreen",
+    "concern": "acne",
+    "ageGroups": ["20s", "30s", "40s", "50s+"],
+    "name": "논코메도제닉 선크림",
+    "category": "자외선 차단",
+    "keyIngredients": ["징크옥사이드", "티타늄디옥사이드"],
+    "description": "모공을 막지 않는 무기자차 선크림. 색소침착 예방을 위해 전 연령 필수."
+  },
+  {
+    "id": "hair-caffeine-shampoo",
+    "concern": "hair",
+    "ageGroups": ["20s", "30s"],
+    "name": "카페인 기능성 샴푸",
+    "category": "샴푸",
+    "keyIngredients": ["카페인", "비오틴", "판테놀"],
+    "description": "초기 탈모가 신경 쓰이는 20~30대용. 두피에 1~2분 머금은 뒤 헹구면 좋아요."
+  },
+  {
+    "id": "hair-scalp-tonic",
+    "concern": "hair",
+    "ageGroups": ["20s", "30s", "40s"],
+    "name": "두피 쿨링 토닉",
+    "category": "두피 케어",
+    "keyIngredients": ["멘톨", "덱스판테놀", "나이아신아마이드"],
+    "description": "저녁 샴푸 후 두피에 도포해 혈행과 두피 컨디션을 관리하는 토닉."
+  },
+  {
+    "id": "hair-biotin-supplement",
+    "concern": "hair",
+    "ageGroups": ["20s", "30s", "40s", "50s+"],
+    "name": "비오틴·아연 영양제",
+    "category": "이너케어",
+    "keyIngredients": ["비오틴", "아연", "L-시스테인"],
+    "description": "모발 구성 영양소 보충용. 식사와 함께 하루 1회 꾸준히 복용하는 것이 핵심."
+  },
+  {
+    "id": "hair-minoxidil-info",
+    "concern": "hair",
+    "ageGroups": ["30s", "40s", "50s+"],
+    "name": "미녹시딜 외용액 (일반의약품)",
+    "category": "의약품 정보",
+    "keyIngredients": ["미녹시딜 3~5%"],
+    "description": "효과가 검증된 대표 성분. 시작 전 약사·의사 상담을 권장하며 최소 4~6개월 꾸준히."
+  },
+  {
+    "id": "hair-volume-shampoo",
+    "concern": "hair",
+    "ageGroups": ["40s", "50s+"],
+    "name": "볼륨 강화 단백질 샴푸",
+    "category": "샴푸",
+    "keyIngredients": ["가수분해 케라틴", "나이아신아마이드"],
+    "description": "모발이 가늘어지는 40대 이후에 적합. 모발 굵기 보완과 두피 영양 공급."
+  },
+  {
+    "id": "hair-scalp-brush",
+    "concern": "hair",
+    "ageGroups": ["30s", "40s", "50s+"],
+    "name": "실리콘 두피 마사지 브러시",
+    "category": "도구",
+    "keyIngredients": [],
+    "description": "샴푸 시 손톱 대신 사용해 두피 자극 없이 마사지. 혈행 관리 루틴에 활용."
+  }
+]

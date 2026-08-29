@@ -1,0 +1,35 @@
+import type { ConcernType, RoutineTask, RoutineTime } from '../types';
+
+/** 모듈이 제공하는 루틴 템플릿. id는 등록 시 concern 접두어로 생성된다. */
+export interface RoutineTemplate {
+  key: string;
+  title: string;
+  time: RoutineTime;
+}
+
+/**
+ * 관심사 모듈 정의.
+ * 공용 코어 엔진(사진 기록, 루틴, 분석, 추천)은 concern 타입만 알면 동작하고,
+ * 각 모듈은 도메인 콘텐츠(라벨, 기본 루틴, 촬영 가이드)만 제공한다.
+ * 새 관심사(예: 주름, 두피 노화)를 추가할 때는 모듈 하나를 만들어
+ * registry에 등록하면 된다.
+ */
+export interface ConcernModule {
+  type: ConcernType;
+  label: string;
+  emoji: string;
+  /** 온보딩·홈에서 보여줄 한 줄 소개 */
+  tagline: string;
+  /** 사진 촬영 시 안내 문구 (동일 조건 촬영 유도) */
+  photoTip: string;
+  routineTemplates: RoutineTemplate[];
+}
+
+export function buildDefaultTasks(module: ConcernModule): RoutineTask[] {
+  return module.routineTemplates.map((template) => ({
+    id: `${module.type}-${template.key}`,
+    concern: module.type,
+    title: template.title,
+    time: template.time,
+  }));
+}
