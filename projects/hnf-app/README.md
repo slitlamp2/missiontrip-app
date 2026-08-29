@@ -1,4 +1,4 @@
-# 케어로그 (care-app)
+# H&F app (hnf-app)
 
 여드름 케어와 탈모 케어를 하나의 앱에서 다루는 **피부·두피 케어 앱** MVP 스캐폴딩입니다.
 20대(여드름·초기 탈모)를 핵심 타겟으로 하고, 30·40·50대 이상은 연령대별 맞춤 가이드·추천으로 확장합니다.
@@ -58,7 +58,7 @@ src/
 ## 실행
 
 ```bash
-cd care-app
+cd projects/hnf-app
 npm install
 npx expo start --port 8087
 ```

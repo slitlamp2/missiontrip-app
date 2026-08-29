@@ -48,7 +48,7 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.appName}>케어로그</Text>
+        <Text style={styles.appName}>H&F app</Text>
         <Text style={styles.headline}>
           나에게 맞는 케어를 시작하기 전에{'\n'}두 가지만 알려주세요
         </Text>

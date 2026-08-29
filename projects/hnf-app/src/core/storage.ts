@@ -36,8 +36,8 @@ export async function removeItem(key: string): Promise<boolean> {
 }
 
 export const STORAGE_KEYS = {
-  profile: 'care-app/profile',
-  photos: 'care-app/photos',
-  routineTasks: 'care-app/routine-tasks',
-  routineLogs: 'care-app/routine-logs',
+  profile: 'hnf-app/profile',
+  photos: 'hnf-app/photos',
+  routineTasks: 'hnf-app/routine-tasks',
+  routineLogs: 'hnf-app/routine-logs',
 } as const;
