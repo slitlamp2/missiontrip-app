@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AgeGroupSelector from '../components/AgeGroupSelector';
 import ConcernSelector from '../components/ConcernSelector';
 import { useProfile } from '../context/ProfileContext';
+import { notify } from '../core/dialog';
 import { saveProfile } from '../core/profile';
 import { syncTasksWithConcerns } from '../core/routine';
 import type { AgeGroup, ConcernType, UserProfile } from '../types';
@@ -38,7 +38,7 @@ export default function OnboardingScreen() {
     const saved = await saveProfile(profile);
     if (!saved) {
       setSaving(false);
-      Alert.alert('저장 실패', '프로필을 저장하지 못했어요. 다시 시도해 주세요.');
+      notify('저장 실패', '프로필을 저장하지 못했어요. 다시 시도해 주세요.');
       return;
     }
     await syncTasksWithConcerns(concerns);

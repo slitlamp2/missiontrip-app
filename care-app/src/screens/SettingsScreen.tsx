@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,6 +9,7 @@ import {
 import AgeGroupSelector from '../components/AgeGroupSelector';
 import ConcernSelector from '../components/ConcernSelector';
 import { useRequiredProfile } from '../context/ProfileContext';
+import { confirmDialog, notify } from '../core/dialog';
 import { clearProfile, saveProfile } from '../core/profile';
 import { syncTasksWithConcerns } from '../core/routine';
 import type { AgeGroup, ConcernType } from '../types';
@@ -28,7 +28,7 @@ export default function SettingsScreen() {
 
   const handleSave = async () => {
     if (concerns.length === 0) {
-      Alert.alert('알림', '관심 케어를 최소 1개 선택해 주세요.');
+      notify('알림', '관심 케어를 최소 1개 선택해 주세요.');
       return;
     }
     setSaving(true);
@@ -36,31 +36,26 @@ export default function SettingsScreen() {
     const saved = await saveProfile(next);
     if (!saved) {
       setSaving(false);
-      Alert.alert('저장 실패', '프로필을 저장하지 못했어요. 다시 시도해 주세요.');
+      notify('저장 실패', '프로필을 저장하지 못했어요. 다시 시도해 주세요.');
       return;
     }
     await syncTasksWithConcerns(concerns);
     setProfile(next);
     setSaving(false);
-    Alert.alert('저장 완료', '프로필과 기본 루틴이 업데이트됐어요.');
+    notify('저장 완료', '프로필과 기본 루틴이 업데이트됐어요.');
   };
 
   const handleReset = () => {
-    Alert.alert(
-      '프로필 초기화',
-      '프로필을 지우고 온보딩으로 돌아갈까요? (사진·루틴 기록은 유지됩니다)',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '초기화',
-          style: 'destructive',
-          onPress: async () => {
-            await clearProfile();
-            setProfile(null);
-          },
-        },
-      ],
-    );
+    confirmDialog({
+      title: '프로필 초기화',
+      message: '프로필을 지우고 온보딩으로 돌아갈까요? (사진·루틴 기록은 유지됩니다)',
+      confirmLabel: '초기화',
+      destructive: true,
+      onConfirm: async () => {
+        await clearProfile();
+        setProfile(null);
+      },
+    });
   };
 
   return (

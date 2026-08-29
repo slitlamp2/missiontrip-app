@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import {
-  Alert,
   FlatList,
   Image,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,10 +13,16 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { useRequiredProfile } from '../context/ProfileContext';
 import { analysisService } from '../core/analysis';
+import { confirmDialog, notify } from '../core/dialog';
 import { addPhoto, deletePhoto, getPhotos, updatePhoto } from '../core/photoLog';
 import { getRecentCompletionRate } from '../core/routine';
 import { getModule } from '../modules/registry';
-import { CONCERN_LABELS, type ConcernType, type PhotoEntry } from '../types';
+import {
+  CONCERN_LABELS,
+  type AnalysisResult,
+  type ConcernType,
+  type PhotoEntry,
+} from '../types';
 import { colors, spacing } from '../theme';
 
 export default function TimelineScreen() {
@@ -26,6 +32,9 @@ export default function TimelineScreen() {
     profile.concerns[0],
   );
   const [busy, setBusy] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
 
   const reload = useCallback(async () => {
     setPhotos(await getPhotos());
@@ -46,7 +55,7 @@ export default function TimelineScreen() {
       if (source === 'camera') {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (!permission.granted) {
-          Alert.alert('권한 필요', '카메라 권한을 허용해야 촬영할 수 있어요.');
+          notify('권한 필요', '카메라 권한을 허용해야 촬영할 수 있어요.');
           return;
         }
       }
@@ -68,7 +77,7 @@ export default function TimelineScreen() {
         sourceUri: result.assets[0].uri,
       });
       if (!entry) {
-        Alert.alert('저장 실패', '사진을 저장하지 못했어요. 다시 시도해 주세요.');
+        notify('저장 실패', '사진을 저장하지 못했어요. 다시 시도해 주세요.');
         return;
       }
       await reload();
@@ -84,24 +93,20 @@ export default function TimelineScreen() {
     });
     await updatePhoto({ ...photo, aiScore: result.score });
     await reload();
-    Alert.alert(
-      'AI 분석 결과 (베타)',
-      `${result.summary}\n\n관리 팁\n${result.tips.map((tip) => `• ${tip}`).join('\n')}`,
-    );
+    setAnalysisResult(result);
   };
 
   const confirmDelete = (photo: PhotoEntry) => {
-    Alert.alert('사진 삭제', '이 기록을 삭제할까요?', [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '삭제',
-        style: 'destructive',
-        onPress: async () => {
-          await deletePhoto(photo.id);
-          await reload();
-        },
+    confirmDialog({
+      title: '사진 삭제',
+      message: '이 기록을 삭제할까요?',
+      confirmLabel: '삭제',
+      destructive: true,
+      onConfirm: async () => {
+        await deletePhoto(photo.id);
+        await reload();
       },
-    ]);
+    });
   };
 
   const visiblePhotos = photos.filter((photo) => photo.concern === activeConcern);
@@ -167,6 +172,9 @@ export default function TimelineScreen() {
           >
             <Image source={{ uri: item.uri }} style={styles.thumbnail} />
             <View style={styles.photoInfo}>
+              <Text style={styles.photoConcern}>
+                {CONCERN_LABELS[item.concern]}
+              </Text>
               <Text style={styles.photoDate}>
                 {new Date(item.takenAt).toLocaleString('ko-KR', {
                   month: 'long',
@@ -190,6 +198,37 @@ export default function TimelineScreen() {
           </TouchableOpacity>
         )}
       />
+
+      <Modal
+        visible={analysisResult !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setAnalysisResult(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>AI 분석 결과 (베타)</Text>
+            {analysisResult && (
+              <>
+                <Text style={styles.modalScore}>{analysisResult.score}점</Text>
+                <Text style={styles.modalSummary}>{analysisResult.summary}</Text>
+                <Text style={styles.modalTipsTitle}>관리 팁</Text>
+                {analysisResult.tips.map((tip) => (
+                  <Text key={tip} style={styles.modalTip}>
+                    • {tip}
+                  </Text>
+                ))}
+              </>
+            )}
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setAnalysisResult(null)}
+            >
+              <Text style={styles.modalCloseButtonText}>확인</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -296,6 +335,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.xs,
   },
+  photoConcern: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.primary,
+  },
   photoDate: {
     fontSize: 14,
     fontWeight: '600',
@@ -328,5 +372,58 @@ const styles = StyleSheet.create({
   deleteHint: {
     fontSize: 11,
     color: colors.textMuted,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: spacing.lg,
+    gap: spacing.sm,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  modalScore: {
+    fontSize: 34,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  modalSummary: {
+    fontSize: 14,
+    color: colors.text,
+    lineHeight: 21,
+  },
+  modalTipsTitle: {
+    marginTop: spacing.sm,
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  modalTip: {
+    fontSize: 13,
+    color: colors.textMuted,
+    lineHeight: 20,
+  },
+  modalCloseButton: {
+    marginTop: spacing.md,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: spacing.sm + 4,
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
