@@ -1,10 +1,21 @@
-import type { ConcernType, RoutineTask, RoutineTime } from '../types';
+import {
+  ALL_WEEKDAYS,
+  type AgeGroup,
+  type ConcernType,
+  type RoutineTask,
+  type RoutineTime,
+  type Weekday,
+} from '../types';
 
 /** 모듈이 제공하는 루틴 템플릿. id는 등록 시 concern 접두어로 생성된다. */
 export interface RoutineTemplate {
   key: string;
   title: string;
   time: RoutineTime;
+  /** 이 템플릿이 적용되는 연령대. 생략하면 전 연령. */
+  ageGroups?: AgeGroup[];
+  /** 수행 요일. 생략하면 매일. 주간 루틴은 특정 요일만 지정. */
+  days?: Weekday[];
 }
 
 /**
@@ -25,11 +36,20 @@ export interface ConcernModule {
   routineTemplates: RoutineTemplate[];
 }
 
-export function buildDefaultTasks(module: ConcernModule): RoutineTask[] {
-  return module.routineTemplates.map((template) => ({
-    id: `${module.type}-${template.key}`,
-    concern: module.type,
-    title: template.title,
-    time: template.time,
-  }));
+/** 연령대에 해당하는 템플릿만 골라 기본 태스크로 변환한다. */
+export function buildDefaultTasks(
+  module: ConcernModule,
+  ageGroup: AgeGroup,
+): RoutineTask[] {
+  return module.routineTemplates
+    .filter(
+      (template) => !template.ageGroups || template.ageGroups.includes(ageGroup),
+    )
+    .map((template) => ({
+      id: `${module.type}-${template.key}`,
+      concern: module.type,
+      title: template.title,
+      time: template.time,
+      days: template.days ?? [...ALL_WEEKDAYS],
+    }));
 }

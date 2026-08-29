@@ -6,6 +6,21 @@ export type ConcernType = 'acne' | 'hair';
 
 export type RoutineTime = 'morning' | 'evening';
 
+/** 요일. 0=일요일 ~ 6=토요일 (JS Date.getDay()와 동일) */
+export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export const ALL_WEEKDAYS: Weekday[] = [0, 1, 2, 3, 4, 5, 6];
+
+export const WEEKDAY_LABELS: Record<Weekday, string> = {
+  0: '일',
+  1: '월',
+  2: '화',
+  3: '수',
+  4: '목',
+  5: '금',
+  6: '토',
+};
+
 export interface UserProfile {
   ageGroup: AgeGroup;
   concerns: ConcernType[];
@@ -28,7 +43,30 @@ export interface RoutineTask {
   concern: ConcernType;
   title: string;
   time: RoutineTime;
+  /** 이 루틴을 수행하는 요일. 매일이면 7개 전부. */
+  days: Weekday[];
+  /** 사용자가 직접 추가한 항목이면 true (기본 템플릿과 구분) */
+  custom?: boolean;
 }
+
+/** 아침/저녁 루틴 알림 리마인더 설정 */
+export interface ReminderSettings {
+  morningEnabled: boolean;
+  morningHour: number;
+  morningMinute: number;
+  eveningEnabled: boolean;
+  eveningHour: number;
+  eveningMinute: number;
+}
+
+export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
+  morningEnabled: false,
+  morningHour: 8,
+  morningMinute: 0,
+  eveningEnabled: false,
+  eveningHour: 21,
+  eveningMinute: 0,
+};
 
 /** 날짜(YYYY-MM-DD)별로 완료한 태스크 id 목록을 저장한다. */
 export interface RoutineLog {

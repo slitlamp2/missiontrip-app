@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { ProfileProvider } from './src/context/ProfileContext';
 import { getProfile } from './src/core/profile';
+import { configureNotificationHandler } from './src/core/reminders';
 import RootNavigator from './src/navigation/RootNavigator';
 import type { UserProfile } from './src/types';
 import { colors } from './src/theme';
@@ -14,6 +15,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    configureNotificationHandler();
     (async () => {
       const saved = await getProfile();
       setProfile(saved);

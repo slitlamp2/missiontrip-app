@@ -13,7 +13,7 @@ import ConcernSelector from '../components/ConcernSelector';
 import { useProfile } from '../context/ProfileContext';
 import { notify } from '../core/dialog';
 import { saveProfile } from '../core/profile';
-import { syncTasksWithConcerns } from '../core/routine';
+import { syncTasksWithProfile } from '../core/routine';
 import type { AgeGroup, ConcernType, UserProfile } from '../types';
 import { colors, spacing } from '../theme';
 
@@ -41,7 +41,7 @@ export default function OnboardingScreen() {
       notify('저장 실패', '프로필을 저장하지 못했어요. 다시 시도해 주세요.');
       return;
     }
-    await syncTasksWithConcerns(concerns);
+    await syncTasksWithProfile(concerns, ageGroup);
     setProfile(profile);
   };
 

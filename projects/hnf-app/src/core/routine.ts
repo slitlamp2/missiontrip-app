@@ -1,4 +1,12 @@
-import type { ConcernType, RoutineLog, RoutineTask } from '../types';
+import {
+  ALL_WEEKDAYS,
+  type AgeGroup,
+  type ConcernType,
+  type RoutineLog,
+  type RoutineTask,
+  type RoutineTime,
+  type Weekday,
+} from '../types';
 import { buildDefaultTasks } from '../modules/types';
 import { getModule } from '../modules/registry';
 import { getItem, setItem, STORAGE_KEYS } from './storage';
@@ -13,34 +21,95 @@ export function todayKey(date: Date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+/** 예전 버전 데이터에 days 필드가 없으면 매일로 보정한다. */
+function normalize(task: RoutineTask): RoutineTask {
+  return { ...task, days: task.days ?? [...ALL_WEEKDAYS] };
+}
+
 export async function getTasks(): Promise<RoutineTask[]> {
-  return (await getItem<RoutineTask[]>(STORAGE_KEYS.routineTasks)) ?? [];
+  const stored = (await getItem<RoutineTask[]>(STORAGE_KEYS.routineTasks)) ?? [];
+  return stored.map(normalize);
+}
+
+async function saveTasks(tasks: RoutineTask[]): Promise<RoutineTask[]> {
+  await setItem(STORAGE_KEYS.routineTasks, tasks);
+  return tasks;
+}
+
+/** 해당 날짜(요일)에 수행하도록 지정된 태스크만 골라낸다. */
+export function tasksForDate(tasks: RoutineTask[], date: Date): RoutineTask[] {
+  const weekday = date.getDay() as Weekday;
+  return tasks.filter((task) => task.days.includes(weekday));
+}
+
+export async function getTasksForToday(): Promise<RoutineTask[]> {
+  return tasksForDate(await getTasks(), new Date());
 }
 
 /**
- * 프로필의 관심사에 맞춰 기본 루틴을 시드한다.
- * 이미 있는 태스크는 유지하고, 새로 선택된 관심사의 템플릿만 추가하며
- * 선택 해제된 관심사의 태스크는 제거한다.
+ * 프로필(관심사 + 연령대)에 맞춰 기본 루틴을 시드한다.
+ * - 사용자가 직접 추가한(custom) 항목은 관심사가 유지되는 한 보존
+ * - 새 프로필의 기본 템플릿에 있는 기존 항목은 순서 그대로 유지
+ * - 프로필에서 벗어난 기본 항목(선택 해제된 관심사, 다른 연령대 전용)은 제거
  */
-export async function syncTasksWithConcerns(
+export async function syncTasksWithProfile(
   concerns: ConcernType[],
+  ageGroup: AgeGroup,
 ): Promise<RoutineTask[]> {
   const existing = await getTasks();
-  const kept = existing.filter((task) => concerns.includes(task.concern));
+  const defaults = concerns.flatMap((concern) =>
+    buildDefaultTasks(getModule(concern), ageGroup),
+  );
+  const defaultIds = new Set(defaults.map((task) => task.id));
+
+  const kept = existing.filter(
+    (task) =>
+      concerns.includes(task.concern) && (task.custom || defaultIds.has(task.id)),
+  );
   const keptIds = new Set(kept.map((task) => task.id));
+  const added = defaults.filter((task) => !keptIds.has(task.id));
 
-  const added: RoutineTask[] = [];
-  for (const concern of concerns) {
-    for (const task of buildDefaultTasks(getModule(concern))) {
-      if (!keptIds.has(task.id)) {
-        added.push(task);
-      }
-    }
+  return saveTasks([...kept, ...added]);
+}
+
+/** 사용자 정의 루틴 항목을 추가한다. */
+export async function addTask(params: {
+  concern: ConcernType;
+  title: string;
+  time: RoutineTime;
+  days: Weekday[];
+}): Promise<RoutineTask[]> {
+  const tasks = await getTasks();
+  const task: RoutineTask = {
+    id: `custom-${Date.now()}`,
+    concern: params.concern,
+    title: params.title.trim(),
+    time: params.time,
+    days: params.days.length > 0 ? params.days : [...ALL_WEEKDAYS],
+    custom: true,
+  };
+  return saveTasks([...tasks, task]);
+}
+
+export async function deleteTask(taskId: string): Promise<RoutineTask[]> {
+  const tasks = await getTasks();
+  return saveTasks(tasks.filter((task) => task.id !== taskId));
+}
+
+/** 저장된 목록에서 두 태스크의 위치를 맞바꾼다 (순서 변경). */
+export async function swapTasks(
+  taskIdA: string,
+  taskIdB: string,
+): Promise<RoutineTask[]> {
+  const tasks = await getTasks();
+  const indexA = tasks.findIndex((task) => task.id === taskIdA);
+  const indexB = tasks.findIndex((task) => task.id === taskIdB);
+  if (indexA === -1 || indexB === -1) {
+    return tasks;
   }
-
-  const next = [...kept, ...added];
-  await setItem(STORAGE_KEYS.routineTasks, next);
-  return next;
+  const next = [...tasks];
+  [next[indexA], next[indexB]] = [next[indexB], next[indexA]];
+  return saveTasks(next);
 }
 
 async function getLogMap(): Promise<LogMap> {
@@ -63,18 +132,25 @@ export async function toggleTask(date: string, taskId: string): Promise<RoutineL
   return { date, completedTaskIds: next };
 }
 
-/** 최근 N일간 루틴 완료율(0~1). 기록이 전혀 없으면 0을 반환한다. */
+/**
+ * 최근 N일간 루틴 완료율(0~1).
+ * 요일별 루틴을 고려해, 각 날짜에 실제로 예정됐던 태스크 수를 분모로 쓴다.
+ */
 export async function getRecentCompletionRate(days = 7): Promise<number> {
   const tasks = await getTasks();
-  if (tasks.length === 0) {
-    return 0;
-  }
   const logs = await getLogMap();
+  let scheduled = 0;
   let completed = 0;
   for (let offset = 0; offset < days; offset += 1) {
     const date = new Date();
     date.setDate(date.getDate() - offset);
-    completed += (logs[todayKey(date)] ?? []).length;
+    const dayTasks = tasksForDate(tasks, date);
+    scheduled += dayTasks.length;
+    const done = new Set(logs[todayKey(date)] ?? []);
+    completed += dayTasks.filter((task) => done.has(task.id)).length;
   }
-  return Math.min(1, completed / (tasks.length * days));
+  if (scheduled === 0) {
+    return 0;
+  }
+  return Math.min(1, completed / scheduled);
 }

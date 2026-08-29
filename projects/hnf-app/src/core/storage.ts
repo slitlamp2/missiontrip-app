@@ -40,4 +40,5 @@ export const STORAGE_KEYS = {
   photos: 'hnf-app/photos',
   routineTasks: 'hnf-app/routine-tasks',
   routineLogs: 'hnf-app/routine-logs',
+  reminders: 'hnf-app/reminders',
 } as const;

@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { useRequiredProfile } from '../context/ProfileContext';
 import { getPhotos } from '../core/photoLog';
-import { getLog, getTasks, todayKey } from '../core/routine';
+import { getLog, getTasksForToday, todayKey } from '../core/routine';
 import { getModule } from '../modules/registry';
 import { AGE_GROUP_LABELS, type PhotoEntry } from '../types';
 import { colors, spacing } from '../theme';
@@ -20,15 +20,18 @@ export default function HomeScreen() {
       let active = true;
       (async () => {
         const [tasks, log, photos] = await Promise.all([
-          getTasks(),
+          getTasksForToday(),
           getLog(todayKey()),
           getPhotos(),
         ]);
         if (!active) {
           return;
         }
+        const taskIds = new Set(tasks.map((task) => task.id));
         setTaskCount(tasks.length);
-        setCompletedCount(log.completedTaskIds.length);
+        setCompletedCount(
+          log.completedTaskIds.filter((id) => taskIds.has(id)).length,
+        );
         // 관심사별 최신 사진 1장씩
         const latest = profile.concerns
           .map((concern) => photos.find((photo) => photo.concern === concern))
