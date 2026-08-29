@@ -1,7 +1,11 @@
+import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 
 import type { ConcernType, PhotoEntry } from '../types';
 import { getItem, setItem, STORAGE_KEYS } from './storage';
+
+/** 웹에는 파일 시스템이 없어 image-picker가 주는 URI(blob/data)를 그대로 보관한다. */
+const hasFileSystem = Platform.OS !== 'web';
 
 const PHOTO_DIR = `${FileSystem.documentDirectory}care-photos/`;
 
@@ -26,11 +30,14 @@ export async function addPhoto(params: {
   note?: string;
 }): Promise<PhotoEntry | null> {
   try {
-    await ensurePhotoDir();
     const id = `photo-${Date.now()}`;
-    const extension = params.sourceUri.split('.').pop()?.toLowerCase() ?? 'jpg';
-    const destinationUri = `${PHOTO_DIR}${id}.${extension}`;
-    await FileSystem.copyAsync({ from: params.sourceUri, to: destinationUri });
+    let destinationUri = params.sourceUri;
+    if (hasFileSystem) {
+      await ensurePhotoDir();
+      const extension = params.sourceUri.split('.').pop()?.toLowerCase() ?? 'jpg';
+      destinationUri = `${PHOTO_DIR}${id}.${extension}`;
+      await FileSystem.copyAsync({ from: params.sourceUri, to: destinationUri });
+    }
 
     const entry: PhotoEntry = {
       id,
@@ -58,7 +65,7 @@ export async function deletePhoto(id: string): Promise<boolean> {
   try {
     const photos = await getPhotos();
     const target = photos.find((photo) => photo.id === id);
-    if (target) {
+    if (target && hasFileSystem) {
       await FileSystem.deleteAsync(target.uri, { idempotent: true });
     }
     return setItem(
